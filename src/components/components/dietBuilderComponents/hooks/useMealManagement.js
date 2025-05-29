@@ -1,5 +1,4 @@
-// hooks/useMealManagement.js
-import { useState } from 'react';
+import { useState } from "react";
 
 export const useMealManagement = () => {
   const [refeicoes, setRefeicoes] = useState([]);
@@ -46,34 +45,91 @@ export const useMealManagement = () => {
     return true;
   };
 
-  // Nova função para adicionar múltiplos alimentos
   const adicionarMultiplosAlimentos = (alimentosParaAdicionar) => {
     if (!alimentosParaAdicionar || alimentosParaAdicionar.length === 0) {
       return false;
     }
 
-    // Validar se todos os itens têm food e quantity válidos
     const alimentosValidos = alimentosParaAdicionar.filter(
-      item => item.food && item.quantity && item.quantity > 0
+      (item) => item.food && item.quantity && item.quantity > 0
     );
 
     if (alimentosValidos.length === 0) {
       return false;
     }
 
-    // Criar os novos alimentos com IDs únicos
     const novosAlimentos = alimentosValidos.map((item, index) => ({
       ...item.food,
       quantidade: item.quantity,
-      id: Date.now() + index, // Garantir IDs únicos
+      id: Date.now() + index,
     }));
 
-    // Adicionar todos os alimentos à refeição atual
     setCurrentMeal({
       ...currentMeal,
       alimentos: [...currentMeal.alimentos, ...novosAlimentos],
     });
 
+    return true;
+  };
+
+  const moverRefeicaoParaCima = (refeicaoId) => {
+    const index = refeicoes.findIndex((r) => r.id === refeicaoId);
+    if (index > 0) {
+      const novasRefeicoes = [...refeicoes];
+      const temp = novasRefeicoes[index - 1];
+      novasRefeicoes[index - 1] = novasRefeicoes[index];
+      novasRefeicoes[index] = temp;
+      setRefeicoes(novasRefeicoes);
+    }
+  };
+
+  const moverRefeicaoParaBaixo = (refeicaoId) => {
+    const index = refeicoes.findIndex((r) => r.id === refeicaoId);
+    if (index < refeicoes.length - 1) {
+      const novasRefeicoes = [...refeicoes];
+      const temp = novasRefeicoes[index + 1];
+      novasRefeicoes[index + 1] = novasRefeicoes[index];
+      novasRefeicoes[index] = temp;
+      setRefeicoes(novasRefeicoes);
+    }
+  };
+
+  const editarRefeicaoExistente = (refeicaoId) => {
+    const refeicao = refeicoes.find((r) => r.id === refeicaoId);
+    if (!refeicao) return false;
+
+    const alimentosClonados = refeicao.alimentos.map((alimento) => ({
+      ...alimento,
+      id: Date.now() + Math.random() * 1000,
+    }));
+
+    setCurrentMeal({
+      nome: refeicao.nome,
+      alimentos: alimentosClonados,
+      idOriginal: refeicao.id,
+    });
+
+    return true;
+  };
+
+  const salvarRefeicaoEditada = () => {
+    if (!currentMeal.nome || currentMeal.alimentos.length === 0) return false;
+    if (!currentMeal.idOriginal) return false;
+
+    const macros = calcularMacrosRefeicao(currentMeal.alimentos);
+    const refeicaoAtualizada = {
+      id: currentMeal.idOriginal,
+      nome: currentMeal.nome,
+      alimentos: currentMeal.alimentos,
+      macros,
+    };
+
+    const refeicoesAtualizadas = refeicoes.map((r) =>
+      r.id === currentMeal.idOriginal ? refeicaoAtualizada : r
+    );
+
+    setRefeicoes(refeicoesAtualizadas);
+    setCurrentMeal({ nome: "", alimentos: [] });
     return true;
   };
 
@@ -89,7 +145,9 @@ export const useMealManagement = () => {
 
     setCurrentMeal({
       ...currentMeal,
-      alimentos: currentMeal.alimentos.filter((a) => !alimentoIds.includes(a.id)),
+      alimentos: currentMeal.alimentos.filter(
+        (a) => !alimentoIds.includes(a.id)
+      ),
     });
 
     return true;
@@ -116,7 +174,6 @@ export const useMealManagement = () => {
     setRefeicoes(refeicoes.filter((r) => r.id !== refeicaoId));
   };
 
-  // Função utilitária para obter estatísticas da refeição atual
   const obterEstatisticasRefeicaoAtual = () => {
     const macros = calcularMacrosRefeicao(currentMeal.alimentos);
     return {
@@ -127,16 +184,16 @@ export const useMealManagement = () => {
     };
   };
 
-  // Função para duplicar uma refeição existente
   const duplicarRefeicao = (refeicaoId) => {
-    const refeicaoOriginal = refeicoes.find(r => r.id === refeicaoId);
+    const refeicaoOriginal = refeicoes.find((r) => r.id === refeicaoId);
     if (!refeicaoOriginal) return false;
 
-    // Criar novos IDs para todos os alimentos
-    const alimentosDuplicados = refeicaoOriginal.alimentos.map((alimento, index) => ({
-      ...alimento,
-      id: Date.now() + index,
-    }));
+    const alimentosDuplicados = refeicaoOriginal.alimentos.map(
+      (alimento, index) => ({
+        ...alimento,
+        id: Date.now() + index,
+      })
+    );
 
     const novaRefeicao = {
       ...refeicaoOriginal,
@@ -155,12 +212,16 @@ export const useMealManagement = () => {
     setCurrentMeal,
     calcularTotalDia,
     adicionarAlimento,
-    adicionarMultiplosAlimentos, // Nova função exportada
+    adicionarMultiplosAlimentos,
+    editarRefeicaoExistente,
+    salvarRefeicaoEditada,
     removerAlimento,
-    removerMultiplosAlimentos, // Nova função para remover múltiplos
+    removerMultiplosAlimentos,
     salvarRefeicao,
     removerRefeicao,
-    duplicarRefeicao, // Nova função para duplicar refeições
-    obterEstatisticasRefeicaoAtual, // Nova função utilitária
+    duplicarRefeicao,
+    obterEstatisticasRefeicaoAtual,
+    moverRefeicaoParaCima,
+    moverRefeicaoParaBaixo,
   };
 };

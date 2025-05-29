@@ -12,8 +12,19 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import DeleteIcon from "@mui/icons-material/Delete";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import EditIcon from "@mui/icons-material/Edit";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 
-export const MealCard = ({ refeicao, onDelete }) => {
+export const MealCard = ({
+  refeicao,
+  onDelete,
+  onDuplicate,
+  onEdit,
+  onMoveUp,
+  onMoveDown,
+}) => {
   return (
     <Accordion sx={{ mb: 2 }}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -56,8 +67,23 @@ export const MealCard = ({ refeicao, onDelete }) => {
             </Typography>
           </Grid>
           <Grid item xs={3}>
+            <IconButton color="secondary" onClick={() => onEdit(refeicao.id)}>
+              <EditIcon />
+            </IconButton>
+            <IconButton
+              color="primary"
+              onClick={() => onDuplicate(refeicao.id)}
+            >
+              <ContentCopyIcon />
+            </IconButton>
             <IconButton color="error" onClick={() => onDelete(refeicao.id)}>
               <DeleteIcon />
+            </IconButton>
+            <IconButton onClick={() => onMoveUp(refeicao.id)} color="inherit">
+              <ArrowUpwardIcon />
+            </IconButton>
+            <IconButton onClick={() => onMoveDown(refeicao.id)} color="inherit">
+              <ArrowDownwardIcon />
             </IconButton>
           </Grid>
         </Grid>

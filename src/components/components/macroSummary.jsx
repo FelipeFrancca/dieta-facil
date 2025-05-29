@@ -8,11 +8,7 @@ import {
   Chip,
   Divider,
 } from "@mui/material";
-import {
-  Restaurant as RestaurantIcon,
-  TrendingUp as TrendingUpIcon,
-  Assessment as AssessmentIcon,
-} from "@mui/icons-material";
+import { Assessment as AssessmentIcon } from "@mui/icons-material";
 
 const MacroSummary = ({
   totalDia,
@@ -22,38 +18,27 @@ const MacroSummary = ({
   gradiente = "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
   compacto = false,
   mostrarPercentuais = true,
-  metaMacros = null, // { proteina: 150, carbo: 200, gordura: 80 }
+  metaMacros = null,
 }) => {
-  // Cálculos básicos
   const percentualCalorias = calorias
     ? Math.round((totalDia.calorias / calorias) * 100)
     : 0;
 
-  // Corrigido: calcular percentual baseado nas calorias totais consumidas
   const calcularPercentualMacro = (valorGramas, tipoMacro) => {
     if (totalDia.calorias <= 0) return 0;
-    
-    const caloriasPorGrama = tipoMacro === 'gordura' ? 9 : 4;
+
+    const caloriasPorGrama = tipoMacro === "gordura" ? 9 : 4;
     const caloriasDoMacro = valorGramas * caloriasPorGrama;
-    
+
     return Math.round((caloriasDoMacro / totalDia.calorias) * 100);
   };
 
-  // Corrigido: calcular percentual da meta quando disponível
   const calcularPercentualMeta = (valor, meta) => {
     return meta ? Math.round((valor / meta) * 100) : 0;
   };
 
-  const getCorProgresso = (percentual) => {
-    if (percentual < 70) return "error";
-    if (percentual < 90) return "warning";
-    if (percentual <= 110) return "success";
-    return "info";
-  };
-
   const formatarValor = (valor) => Math.round(valor);
 
-  // Dados dos macronutrientes
   const macroData = [
     {
       nome: "Calorias",
@@ -61,7 +46,7 @@ const MacroSummary = ({
       unidade: "kcal",
       meta: calorias,
       percentualMeta: percentualCalorias,
-      percentualTotal: 100, // Calorias são sempre 100% do total
+      percentualTotal: 100,
       cor: "#667eea",
       icon: "🔥",
     },
@@ -70,8 +55,11 @@ const MacroSummary = ({
       valor: formatarValor(totalDia.proteina),
       unidade: "g",
       meta: metaMacros?.proteina,
-      percentualMeta: calcularPercentualMeta(totalDia.proteina, metaMacros?.proteina),
-      percentualTotal: calcularPercentualMacro(totalDia.proteina, 'proteina'),
+      percentualMeta: calcularPercentualMeta(
+        totalDia.proteina,
+        metaMacros?.proteina
+      ),
+      percentualTotal: calcularPercentualMacro(totalDia.proteina, "proteina"),
       cor: "#e53e3e",
       icon: "💪",
     },
@@ -81,7 +69,7 @@ const MacroSummary = ({
       unidade: "g",
       meta: metaMacros?.carbo,
       percentualMeta: calcularPercentualMeta(totalDia.carbo, metaMacros?.carbo),
-      percentualTotal: calcularPercentualMacro(totalDia.carbo, 'carbo'),
+      percentualTotal: calcularPercentualMacro(totalDia.carbo, "carbo"),
       cor: "#3182ce",
       icon: "🌾",
     },
@@ -90,8 +78,11 @@ const MacroSummary = ({
       valor: formatarValor(totalDia.gordura),
       unidade: "g",
       meta: metaMacros?.gordura,
-      percentualMeta: calcularPercentualMeta(totalDia.gordura, metaMacros?.gordura),
-      percentualTotal: calcularPercentualMacro(totalDia.gordura, 'gordura'),
+      percentualMeta: calcularPercentualMeta(
+        totalDia.gordura,
+        metaMacros?.gordura
+      ),
+      percentualTotal: calcularPercentualMacro(totalDia.gordura, "gordura"),
       cor: "#38a169",
       icon: "🥑",
     },
@@ -246,8 +237,9 @@ const MacroSummary = ({
             }}
           >
             <Typography variant="body2" sx={{ opacity: 0.9 }}>
-              <strong>Distribuição:</strong> P{macroData[1].percentualTotal}% | C
-              {macroData[2].percentualTotal}% | G{macroData[3].percentualTotal}%
+              <strong>Distribuição:</strong> P{macroData[1].percentualTotal}% |
+              C{macroData[2].percentualTotal}% | G{macroData[3].percentualTotal}
+              %
             </Typography>
             {calorias && (
               <Typography variant="body2" sx={{ opacity: 0.9 }}>

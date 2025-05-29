@@ -1,4 +1,3 @@
-// DietBuilder.jsx - Componente principal com seleção múltipla e alertas
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -18,9 +17,8 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 
-// Importar todos os componentes fragmentados
 import { MealCard } from "./components/dietBuilderComponents/MealCard";
 import { EmptyMealsState } from "./components/dietBuilderComponents/EmptyMealsState";
 import { FoodSearchCategories } from "./components/dietBuilderComponents/FoodSearchCategories";
@@ -31,35 +29,30 @@ import { DietBuilderHeader } from "./components/dietBuilderComponents/DietBuilde
 import { MultiSelectFoodCard } from "./components/dietBuilderComponents/MultiSelectFoodCard";
 import { MultiSelectSummary } from "./components/dietBuilderComponents/MultiSelectSummary";
 
-// Importar hooks customizados
 import { useFoodSearch } from "./components/dietBuilderComponents/hooks/useFoodSearch";
 import { useMealManagement } from "./components/dietBuilderComponents/hooks/useMealManagement";
 
-// Importar utilitários existentes
 import { categorias } from "./components/alimentosDatabase";
 import PDFGenerator from "./components/PDFGenerator";
 import MacroSummary from "./components/macroSummary";
 
 export default function DietBuilder({ calorias, metaMacros = null }) {
-  // Estados para controle de diálogos
   const [openDialog, setOpenDialog] = useState(false);
   const [openFoodSearch, setOpenFoodSearch] = useState(false);
   const [pdfGenerating, setPdfGenerating] = useState(false);
 
-  // Estados para seleção de alimentos
   const [selectedFood, setSelectedFood] = useState(null);
   const [foodQuantity, setFoodQuantity] = useState(100);
-  
-  // Estados para seleção múltipla
-  const [multiSelectMode, setMultiSelectMode] = useState(false);
+
+  const [multiSelectMode, setMultiSelectMode] = useState(true);
   const [selectedFoods, setSelectedFoods] = useState([]);
   const [multiSelectQuantities, setMultiSelectQuantities] = useState({});
 
-  // Estados para alertas
   const [showCalorieAlert, setShowCalorieAlert] = useState(false);
   const [showMacroAlerts, setShowMacroAlerts] = useState({});
 
-  // Hooks customizados
+  const [isEditing, setIsEditing] = useState(false);
+
   const {
     searchTerm,
     setSearchTerm,
@@ -80,74 +73,113 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
     adicionarMultiplosAlimentos,
     removerAlimento,
     salvarRefeicao,
+    salvarRefeicaoEditada,
+    editarRefeicaoExistente,
     removerRefeicao,
+    duplicarRefeicao,
+    moverRefeicaoParaCima,
+    moverRefeicaoParaBaixo
   } = useMealManagement();
 
-  // Calcular totais e verificar limites
   const totalDia = calcularTotalDia();
   const totalComRefeicaoAtual = {
-    calorias: totalDia.calorias + currentMeal.alimentos.reduce((acc, a) => acc + (a.calorias * a.quantidade) / 100, 0),
-    proteina: totalDia.proteina + currentMeal.alimentos.reduce((acc, a) => acc + (a.proteina * a.quantidade) / 100, 0),
-    carbo: totalDia.carbo + currentMeal.alimentos.reduce((acc, a) => acc + (a.carbo * a.quantidade) / 100, 0),
-    gordura: totalDia.gordura + currentMeal.alimentos.reduce((acc, a) => acc + (a.gordura * a.quantidade) / 100, 0),
+    calorias:
+      totalDia.calorias +
+      currentMeal.alimentos.reduce(
+        (acc, a) => acc + (a.calorias * a.quantidade) / 100,
+        0
+      ),
+    proteina:
+      totalDia.proteina +
+      currentMeal.alimentos.reduce(
+        (acc, a) => acc + (a.proteina * a.quantidade) / 100,
+        0
+      ),
+    carbo:
+      totalDia.carbo +
+      currentMeal.alimentos.reduce(
+        (acc, a) => acc + (a.carbo * a.quantidade) / 100,
+        0
+      ),
+    gordura:
+      totalDia.gordura +
+      currentMeal.alimentos.reduce(
+        (acc, a) => acc + (a.gordura * a.quantidade) / 100,
+        0
+      ),
   };
 
-  // Verificar alertas quando os totais mudam
   useEffect(() => {
     if (calorias && totalComRefeicaoAtual.calorias >= calorias * 0.9) {
       setShowCalorieAlert(true);
       if (totalComRefeicaoAtual.calorias >= calorias) {
         Swal.fire({
-          title: '🚨 Limite de Calorias Atingido!',
-          text: `Você atingiu ${Math.round(totalComRefeicaoAtual.calorias)} kcal de ${calorias} kcal diárias.`,
-          icon: 'warning',
-          confirmButtonText: 'Entendi',
-          confirmButtonColor: '#f44336'
+          title: "🚨 Limite de Calorias Atingido!",
+          text: `Você atingiu ${Math.round(
+            totalComRefeicaoAtual.calorias
+          )} kcal de ${calorias} kcal diárias.`,
+          icon: "warning",
+          confirmButtonText: "Entendi",
+          confirmButtonColor: "#f44336",
         });
       }
     } else {
       setShowCalorieAlert(false);
     }
 
-    // Verificar limites de macros se fornecidos
     if (metaMacros) {
       const newMacroAlerts = {};
-      
-      if (metaMacros.proteina && totalComRefeicaoAtual.proteina >= metaMacros.proteina * 0.9) {
+
+      if (
+        metaMacros.proteina &&
+        totalComRefeicaoAtual.proteina >= metaMacros.proteina * 0.9
+      ) {
         newMacroAlerts.proteina = true;
         if (totalComRefeicaoAtual.proteina >= metaMacros.proteina) {
           Swal.fire({
-            title: '🥩 Limite de Proteínas Atingido!',
-            text: `Você atingiu ${Math.round(totalComRefeicaoAtual.proteina)}g de ${metaMacros.proteina}g de proteínas.`,
-            icon: 'info',
-            confirmButtonText: 'Entendi',
-            confirmButtonColor: '#2196f3'
+            title: "🥩 Limite de Proteínas Atingido!",
+            text: `Você atingiu ${Math.round(
+              totalComRefeicaoAtual.proteina
+            )}g de ${metaMacros.proteina}g de proteínas.`,
+            icon: "info",
+            confirmButtonText: "Entendi",
+            confirmButtonColor: "#2196f3",
           });
         }
       }
 
-      if (metaMacros.carbo && totalComRefeicaoAtual.carbo >= metaMacros.carbo * 0.9) {
+      if (
+        metaMacros.carbo &&
+        totalComRefeicaoAtual.carbo >= metaMacros.carbo * 0.9
+      ) {
         newMacroAlerts.carbo = true;
         if (totalComRefeicaoAtual.carbo >= metaMacros.carbo) {
           Swal.fire({
-            title: '🍞 Limite de Carboidratos Atingido!',
-            text: `Você atingiu ${Math.round(totalComRefeicaoAtual.carbo)}g de ${metaMacros.carbo}g de carboidratos.`,
-            icon: 'info',
-            confirmButtonText: 'Entendi',
-            confirmButtonColor: '#ff9800'
+            title: "🍞 Limite de Carboidratos Atingido!",
+            text: `Você atingiu ${Math.round(
+              totalComRefeicaoAtual.carbo
+            )}g de ${metaMacros.carbo}g de carboidratos.`,
+            icon: "info",
+            confirmButtonText: "Entendi",
+            confirmButtonColor: "#ff9800",
           });
         }
       }
 
-      if (metaMacros.gordura && totalComRefeicaoAtual.gordura >= metaMacros.gordura * 0.9) {
+      if (
+        metaMacros.gordura &&
+        totalComRefeicaoAtual.gordura >= metaMacros.gordura * 0.9
+      ) {
         newMacroAlerts.gordura = true;
         if (totalComRefeicaoAtual.gordura >= metaMacros.gordura) {
           Swal.fire({
-            title: '🥑 Limite de Gorduras Atingido!',
-            text: `Você atingiu ${Math.round(totalComRefeicaoAtual.gordura)}g de ${metaMacros.gordura}g de gorduras.`,
-            icon: 'info',
-            confirmButtonText: 'Entendi',
-            confirmButtonColor: '#4caf50'
+            title: "🥑 Limite de Gorduras Atingido!",
+            text: `Você atingiu ${Math.round(
+              totalComRefeicaoAtual.gordura
+            )}g de ${metaMacros.gordura}g de gorduras.`,
+            icon: "info",
+            confirmButtonText: "Entendi",
+            confirmButtonColor: "#4caf50",
           });
         }
       }
@@ -156,7 +188,17 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
     }
   }, [totalComRefeicaoAtual, calorias, metaMacros]);
 
-  // Handlers para seleção múltipla
+  const handleEditarRefeicao = (id) => {
+    console.log("Tentando editar refeição:", id); // 👈 teste
+
+    const sucesso = editarRefeicaoExistente(id);
+    if (sucesso) {
+      setIsEditing(true);
+      setOpenDialog(true);
+      setTimeout(() => setOpenDialog(true), 50);
+    }
+  };
+
   const handleToggleMultiSelect = () => {
     setMultiSelectMode(!multiSelectMode);
     setSelectedFoods([]);
@@ -165,10 +207,14 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
 
   const handleFoodMultiSelect = (food) => {
     const foodKey = `${food.nome}_${food.calorias}`;
-    const isSelected = selectedFoods.find(f => `${f.nome}_${f.calorias}` === foodKey);
-    
+    const isSelected = selectedFoods.find(
+      (f) => `${f.nome}_${f.calorias}` === foodKey
+    );
+
     if (isSelected) {
-      setSelectedFoods(selectedFoods.filter(f => `${f.nome}_${f.calorias}` !== foodKey));
+      setSelectedFoods(
+        selectedFoods.filter((f) => `${f.nome}_${f.calorias}` !== foodKey)
+      );
       const newQuantities = { ...multiSelectQuantities };
       delete newQuantities[foodKey];
       setMultiSelectQuantities(newQuantities);
@@ -176,7 +222,7 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
       setSelectedFoods([...selectedFoods, food]);
       setMultiSelectQuantities({
         ...multiSelectQuantities,
-        [foodKey]: 100
+        [foodKey]: 100,
       });
     }
   };
@@ -184,72 +230,73 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
   const handleQuantityChange = (foodKey, quantity) => {
     setMultiSelectQuantities({
       ...multiSelectQuantities,
-      [foodKey]: quantity
+      [foodKey]: quantity,
     });
   };
 
   const handleAdicionarMultiplos = () => {
-  // Validar se há alimentos selecionados
-  if (selectedFoods.length === 0) {
-    Swal.fire({
-      title: 'Nenhum Alimento Selecionado',
-      text: 'Selecione pelo menos um alimento antes de adicionar.',
-      icon: 'warning',
-      confirmButtonText: 'Entendi'
+    if (selectedFoods.length === 0) {
+      Swal.fire({
+        title: "Nenhum Alimento Selecionado",
+        text: "Selecione pelo menos um alimento antes de adicionar.",
+        icon: "warning",
+        confirmButtonText: "Entendi",
+      });
+      return;
+    }
+
+    const alimentosInvalidos = selectedFoods.filter((food) => {
+      const foodKey = `${food.nome}_${food.calorias}`;
+      const quantity = multiSelectQuantities[foodKey];
+      return !quantity || quantity <= 0;
     });
-    return;
-  }
 
-  // Validar se todas as quantidades são válidas
-  const alimentosInvalidos = selectedFoods.filter(food => {
-    const foodKey = `${food.nome}_${food.calorias}`;
-    const quantity = multiSelectQuantities[foodKey];
-    return !quantity || quantity <= 0;
-  });
+    if (alimentosInvalidos.length > 0) {
+      Swal.fire({
+        title: "Quantidades Inválidas",
+        text: `Verifique as quantidades dos seguintes alimentos: ${alimentosInvalidos
+          .map((f) => f.nome)
+          .join(", ")}`,
+        icon: "error",
+        confirmButtonText: "Corrigir",
+      });
+      return;
+    }
 
-  if (alimentosInvalidos.length > 0) {
-    Swal.fire({
-      title: 'Quantidades Inválidas',
-      text: `Verifique as quantidades dos seguintes alimentos: ${alimentosInvalidos.map(f => f.nome).join(', ')}`,
-      icon: 'error',
-      confirmButtonText: 'Corrigir'
-    });
-    return;
-  }
+    const alimentosParaAdicionar = selectedFoods.map((food) => ({
+      food,
+      quantity: multiSelectQuantities[`${food.nome}_${food.calorias}`] || 100,
+    }));
 
-  const alimentosParaAdicionar = selectedFoods.map(food => ({
-    food,
-    quantity: multiSelectQuantities[`${food.nome}_${food.calorias}`] || 100
-  }));
+    const sucesso = adicionarMultiplosAlimentos(alimentosParaAdicionar);
 
-  const sucesso = adicionarMultiplosAlimentos(alimentosParaAdicionar);
-  
-  if (sucesso) {
-    setSelectedFoods([]);
-    setMultiSelectQuantities({});
-    setMultiSelectMode(false);
-    setOpenFoodSearch(false);
-    
-    Swal.fire({
-      title: '✅ Alimentos Adicionados!',
-      text: `${alimentosParaAdicionar.length} alimento${alimentosParaAdicionar.length !== 1 ? 's foram' : ' foi'} adicionado${alimentosParaAdicionar.length !== 1 ? 's' : ''} à sua refeição.`,
-      icon: 'success',
-      timer: 2000,
-      showConfirmButton: false
-    });
-  } else {
-    Swal.fire({
-      title: 'Erro ao Adicionar',
-      text: 'Ocorreu um erro ao adicionar os alimentos. Tente novamente.',
-      icon: 'error',
-      confirmButtonText: 'Entendi'
-    });
-  }
-};
+    if (sucesso) {
+      setSelectedFoods([]);
+      setMultiSelectQuantities({});
+      setMultiSelectMode(false);
+      setOpenFoodSearch(false);
 
+      Swal.fire({
+        title: "✅ Alimentos Adicionados!",
+        text: `${alimentosParaAdicionar.length} alimento${
+          alimentosParaAdicionar.length !== 1 ? "s foram" : " foi"
+        } adicionado${
+          alimentosParaAdicionar.length !== 1 ? "s" : ""
+        } à sua refeição.`,
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } else {
+      Swal.fire({
+        title: "Erro ao Adicionar",
+        text: "Ocorreu um erro ao adicionar os alimentos. Tente novamente.",
+        icon: "error",
+        confirmButtonText: "Entendi",
+      });
+    }
+  };
 
-
-  // Handler para seleção única (modo original)
   const handleAdicionarAlimento = () => {
     const sucesso = adicionarAlimento(selectedFood, foodQuantity);
     if (sucesso) {
@@ -260,22 +307,24 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
   };
 
   const handleSalvarRefeicao = () => {
-    const sucesso = salvarRefeicao();
+    const sucesso = isEditing ? salvarRefeicaoEditada() : salvarRefeicao();
+
     if (sucesso) {
       setOpenDialog(false);
+      setIsEditing(false); // ← limpa o modo de edição
       Swal.fire({
-        title: '🍽️ Refeição Salva!',
-        text: 'Sua refeição foi adicionada com sucesso.',
-        icon: 'success',
+        title: "🍽️ Refeição Salva!",
+        text: "Sua refeição foi atualizada com sucesso.",
+        icon: "success",
         timer: 2000,
-        showConfirmButton: false
+        showConfirmButton: false,
       });
     } else {
       Swal.fire({
-        title: 'Erro',
-        text: 'Adicione um nome e pelo menos um alimento à refeição.',
-        icon: 'error',
-        confirmButtonText: 'Entendi'
+        title: "Erro",
+        text: "Adicione um nome e pelo menos um alimento à refeição.",
+        icon: "error",
+        confirmButtonText: "Entendi",
       });
     }
   };
@@ -283,10 +332,10 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
   const handleGerarPDF = () => {
     if (refeicoes.length === 0) {
       Swal.fire({
-        title: 'Nenhuma Refeição',
-        text: 'Adicione pelo menos uma refeição antes de gerar o PDF.',
-        icon: 'warning',
-        confirmButtonText: 'Entendi'
+        title: "Nenhuma Refeição",
+        text: "Adicione pelo menos uma refeição antes de gerar o PDF.",
+        icon: "warning",
+        confirmButtonText: "Entendi",
       });
       return;
     }
@@ -301,11 +350,11 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
       onGenerate: () => {
         setPdfGenerating(false);
         Swal.fire({
-          title: '📄 PDF Gerado!',
-          text: 'Seu plano alimentar foi gerado com sucesso.',
-          icon: 'success',
+          title: "📄 PDF Gerado!",
+          text: "Seu plano alimentar foi gerado com sucesso.",
+          icon: "success",
           timer: 3000,
-          showConfirmButton: false
+          showConfirmButton: false,
         });
       },
     });
@@ -314,22 +363,38 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
   };
 
   return (
-    <Card sx={{ boxShadow: "0 8px 32px rgba(0,0,0,0.1)", borderRadius: "10px" }}>
+    <Card
+      sx={{ boxShadow: "0 8px 32px rgba(0,0,0,0.1)", borderRadius: "10px" }}
+    >
       <CardContent sx={{ p: 4 }}>
         {/* Alertas de Limites */}
         {showCalorieAlert && (
           <Alert severity="warning" sx={{ mb: 2 }}>
-            ⚠️ Você está próximo do limite diário de calorias! 
-            Atual: {Math.round(totalComRefeicaoAtual.calorias)} / {calorias} kcal
+            ⚠️ Você está próximo do limite diário de calorias! Atual:{" "}
+            {Math.round(totalComRefeicaoAtual.calorias)} / {calorias} kcal
           </Alert>
         )}
-        
+
         {Object.keys(showMacroAlerts).length > 0 && (
           <Alert severity="info" sx={{ mb: 2 }}>
-            📊 Atenção aos macronutrientes: {' '}
-            {showMacroAlerts.proteina && <Chip label="Proteínas próximo do limite" size="small" sx={{ mr: 1 }} />}
-            {showMacroAlerts.carbo && <Chip label="Carboidratos próximo do limite" size="small" sx={{ mr: 1 }} />}
-            {showMacroAlerts.gordura && <Chip label="Gorduras próximo do limite" size="small" />}
+            📊 Atenção aos macronutrientes:{" "}
+            {showMacroAlerts.proteina && (
+              <Chip
+                label="Proteínas próximo do limite"
+                size="small"
+                sx={{ mr: 1 }}
+              />
+            )}
+            {showMacroAlerts.carbo && (
+              <Chip
+                label="Carboidratos próximo do limite"
+                size="small"
+                sx={{ mr: 1 }}
+              />
+            )}
+            {showMacroAlerts.gordura && (
+              <Chip label="Gorduras próximo do limite" size="small" />
+            )}
           </Alert>
         )}
 
@@ -361,7 +426,11 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
             <MealCard
               key={refeicao.id}
               refeicao={refeicao}
+              onEdit={handleEditarRefeicao}
+              onDuplicate={duplicarRefeicao}
               onDelete={removerRefeicao}
+              onMoveUp={moverRefeicaoParaCima}
+              onMoveDown={moverRefeicaoParaBaixo}
             />
           ))
         ) : (
@@ -390,7 +459,11 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
                 sx={{ mb: 3 }}
                 placeholder="Ex: Café da manhã, Almoço, Jantar..."
                 error={showCalorieAlert}
-                helperText={showCalorieAlert ? "⚠️ Atenção ao limite de calorias diárias!" : ""}
+                helperText={
+                  showCalorieAlert
+                    ? "⚠️ Atenção ao limite de calorias diárias!"
+                    : ""
+                }
               />
 
               <Box
@@ -418,7 +491,16 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
             </Box>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setOpenDialog(false)}>Cancelar</Button>
+            <Button
+              onClick={() => {
+                setOpenDialog(false);
+                setIsEditing(false); // ← limpa o modo edição
+                setCurrentMeal({ nome: "", alimentos: [] }); // ← limpa a refeição
+              }}
+            >
+              Cancelar
+            </Button>
+
             <Button variant="contained" onClick={handleSalvarRefeicao}>
               Salvar Refeição
             </Button>
@@ -441,7 +523,7 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
               }}
             >
               <Typography variant="h6">Buscar Alimento</Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                 <FormControlLabel
                   control={
                     <Switch
@@ -484,7 +566,7 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
                   selectedFoods={selectedFoods}
                   onFoodSelect={handleFoodMultiSelect}
                 />
-                
+
                 {selectedFoods.length > 0 && (
                   <MultiSelectSummary
                     selectedFoods={selectedFoods}
@@ -520,7 +602,8 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
                 disabled={selectedFoods.length === 0}
                 startIcon={<CheckBoxIcon />}
               >
-                Adicionar {selectedFoods.length} Alimento{selectedFoods.length !== 1 ? 's' : ''}
+                Adicionar {selectedFoods.length} Alimento
+                {selectedFoods.length !== 1 ? "s" : ""}
               </Button>
             ) : (
               <Button

@@ -19,7 +19,7 @@ import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import EqualizerIcon from "@mui/icons-material/Equalizer";
-// Importar SweetAlert2
+
 import Swal from "sweetalert2";
 
 export default function TMBForm({ onCalculate, calorias }) {
@@ -29,7 +29,7 @@ export default function TMBForm({ onCalculate, calorias }) {
     altura: "",
     sexo: "masculino",
     atividade: 1.2,
-    objetivo: "manter", // novo campo
+    objetivo: "manter",
   });
 
   const [errors, setErrors] = useState({});
@@ -84,7 +84,6 @@ export default function TMBForm({ onCalculate, calorias }) {
     const { name, value } = e.target;
     setValues({ ...values, [name]: value });
 
-    // Validar campo em tempo real
     if (name !== "sexo" && name !== "atividade" && name !== "objetivo") {
       validateField(name, value);
     }
@@ -127,8 +126,6 @@ export default function TMBForm({ onCalculate, calorias }) {
     };
     return objetivos[objetivo];
   };
-
-  // No método calcularTMB, onde você chama onCalculate, modifique para:
 
   const calcularTMB = async () => {
     if (!validateAllFields()) {
@@ -201,7 +198,6 @@ export default function TMBForm({ onCalculate, calorias }) {
         },
       });
 
-      // Passar tanto as calorias quanto os dados do usuário
       onCalculate &&
         onCalculate(caloriasFinais, {
           sexo,
