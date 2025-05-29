@@ -38,8 +38,9 @@ import {
 } from "./components/alimentosDatabase";
 
 import PDFGenerator from "./components/PDFGenerator";
+import MacroSummary from "./components/macroSummary"; // Importando o novo componente
 
-export default function DietBuilder({ calorias }) {
+export default function DietBuilder({ calorias, metaMacros = null }) {
   const [refeicoes, setRefeicoes] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [openFoodSearch, setOpenFoodSearch] = useState(false);
@@ -193,9 +194,6 @@ export default function DietBuilder({ calorias }) {
   };
 
   const totalDia = calcularTotalDia();
-  const percentualCalorias = calorias
-    ? Math.round((totalDia.calorias / calorias) * 100)
-    : 0;
 
   return (
     <Card
@@ -207,28 +205,29 @@ export default function DietBuilder({ calorias }) {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 2,
             mb: 3,
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <RestaurantIcon sx={{ mr: 2, color: "#667eea" }} />
-            <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+          <Box sx={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0 }}>
+            <RestaurantIcon sx={{ mr: 2, color: "#667eea", flexShrink: 0 }} />
+            <Typography variant="h5" sx={{ fontWeight: "bold", mr: 2, minWidth: 0 }}>
               Agora vamos construir sua dieta!
-              {calorias && (
-                <Chip
-                  label={`Meta: ${calorias} kcal`}
-                  sx={{ ml: 2 }}
-                  color="primary"
-                />
-              )}
             </Typography>
+            {calorias && (
+              <Chip
+                label={`Meta: ${calorias} kcal`}
+                color="primary"
+                sx={{ flexShrink: 0 }}
+              />
+            )}
           </Box>
-          <Box>
+          <Box sx={{ display: "flex", gap: 2, flexShrink: 0 }}>
             <Button
               variant="outlined"
               startIcon={<AddIcon />}
               onClick={() => setOpenDialog(true)}
-              sx={{ mr: 2 }}
             >
               Nova Refeição
             </Button>
@@ -249,68 +248,17 @@ export default function DietBuilder({ calorias }) {
           </Box>
         </Box>
 
-        {/* Resumo Nutricional */}
+        {/* Resumo Nutricional usando o novo componente */}
         {refeicoes.length > 0 && (
-          <Paper
-            sx={{
-              p: 3,
-              mb: 3,
-              background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-              color: "white",
-            }}
-          >
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
-              📊 Resumo Nutricional do Dia
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={6} sm={3}>
-                <Typography variant="body2">Calorias</Typography>
-                <Typography variant="h6">
-                  {Math.round(totalDia.calorias)} kcal
-                </Typography>
-                <Typography variant="caption">
-                  ({percentualCalorias}% da meta)
-                </Typography>
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <Typography variant="body2">Proteínas</Typography>
-                <Typography variant="h6">
-                  {Math.round(totalDia.proteina)}g
-                </Typography>
-                <Typography variant="caption">
-                  (
-                  {Math.round(
-                    ((totalDia.proteina * 4) / totalDia.calorias) * 100
-                  )}
-                  %)
-                </Typography>
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <Typography variant="body2">Carboidratos</Typography>
-                <Typography variant="h6">
-                  {Math.round(totalDia.carbo)}g
-                </Typography>
-                <Typography variant="caption">
-                  (
-                  {Math.round(((totalDia.carbo * 4) / totalDia.calorias) * 100)}
-                  %)
-                </Typography>
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <Typography variant="body2">Gorduras</Typography>
-                <Typography variant="h6">
-                  {Math.round(totalDia.gordura)}g
-                </Typography>
-                <Typography variant="caption">
-                  (
-                  {Math.round(
-                    ((totalDia.gordura * 9) / totalDia.calorias) * 100
-                  )}
-                  %)
-                </Typography>
-              </Grid>
-            </Grid>
-          </Paper>
+          <Box sx={{ mb: 3 }}>
+            <MacroSummary
+              totalDia={totalDia}
+              calorias={calorias}
+              metaMacros={metaMacros}
+              mostrarProgresso={true}
+              gradiente="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
+            />
+          </Box>
         )}
 
         {/* Lista de Refeições */}
@@ -578,6 +526,50 @@ export default function DietBuilder({ calorias }) {
                       ? "2px solid #667eea"
                       : "1px solid #e0e0e0",
                   "&:hover": { backgroundColor: "#f5f5f5" },
+                }}
+                onClick={() => setSelectedFood(alimento)}
+              >
+                <Typography
+                  variant="subtitle1"
+                  sx={{ fontWeight: "bold", textTransform: "capitalize" }}
+                >
+                  {alimento.nome}
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  {alimento.calorias} kcal | P: {alimento.proteina}g | C:{" "}
+                  {alimento.carbo}g | G: {alimento.gordura}g (por 100g)
+                </Typography>
+              </Card>
+            ))}
+
+            {loading &&
+              Array.from({ length: 4 }).map((_, index) => (
+                <Card key={`skeleton-${index}`} sx={{ mb: 2, p: 2 }}>
+                  <Skeleton variant="text" width="60%" height={24} />
+                  <Skeleton variant="text" width="80%" height={20} />
+                </Card>
+              ))}
+
+            {!loading &&
+              searchResults
+                .filter(
+                  (a) =>
+                    !localResults.find(
+                      (l) => l.nome.toLowerCase() === a.nome.toLowerCase()
+                    )
+                )
+                .map((alimento, index) => (
+                  <Card
+                    key={`api-${index}`}
+                    sx={{
+                      mb: 2,
+                      p: 2,
+                      cursor: "pointer",
+                      border:
+                        selectedFood?.nome === alimento.nome
+                          ? "2px solid #667eea"
+                          : "1px solid #e0e0e0",
+                      "&:hover": { backgroundColor: "#f5f5f5" },
                 }}
                 onClick={() => setSelectedFood(alimento)}
               >
