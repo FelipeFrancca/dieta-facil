@@ -406,7 +406,14 @@ export default function MacronutrientAdjuster({
 
               {/* Seção de Controles de Ajuste */}
               <Grid item xs={12} lg={6}>
-                <Paper sx={{ p: 3, height: "100%" }}>
+                <Paper
+                  sx={{
+                    p: { xs: 2, sm: 3 },
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
                   <CollapsibleHeader
                     title="Controles de Ajuste"
                     icon={<SettingsIcon sx={{ color: "#667eea" }} />}
@@ -474,6 +481,7 @@ export default function MacronutrientAdjuster({
                                 step={1}
                                 sx={{
                                   flex: 1,
+                                  minWidth: 0,
                                   "& .MuiSlider-thumb": {
                                     backgroundColor: cor,
                                   },
@@ -488,7 +496,7 @@ export default function MacronutrientAdjuster({
                                   handleDirectInput(macro, e.target.value)
                                 }
                                 size="small"
-                                sx={{ width: 80 }}
+                                sx={{ width: 80, flexShrink: 0 }}
                                 InputProps={{
                                   endAdornment: "%",
                                 }}

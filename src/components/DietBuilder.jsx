@@ -78,7 +78,7 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
     removerRefeicao,
     duplicarRefeicao,
     moverRefeicaoParaCima,
-    moverRefeicaoParaBaixo
+    moverRefeicaoParaBaixo,
   } = useMealManagement();
 
   const totalDia = calcularTotalDia();
@@ -366,7 +366,7 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
     <Card
       sx={{ boxShadow: "0 8px 32px rgba(0,0,0,0.1)", borderRadius: "10px" }}
     >
-      <CardContent sx={{ p: 4 }}>
+      <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
         {/* Alertas de Limites */}
         {showCalorieAlert && (
           <Alert severity="warning" sx={{ mb: 2 }}>
@@ -443,6 +443,10 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
           onClose={() => setOpenDialog(false)}
           maxWidth="md"
           fullWidth
+          sx={{
+            px: { xs: 1, sm: 3 },
+            py: { xs: 2, sm: 3 },
+          }}
         >
           <DialogTitle>
             <Typography variant="h6">Nova Refeição</Typography>
@@ -472,6 +476,8 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
                   justifyContent: "space-between",
                   alignItems: "center",
                   mb: 2,
+                  flexDirection: { xs: "column", sm: "row" }, // empilha em telas pequenas
+                  gap: 2,
                 }}
               >
                 <Typography variant="h6">Alimentos</Typography>
@@ -513,6 +519,10 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
           onClose={() => setOpenFoodSearch(false)}
           maxWidth="md"
           fullWidth
+          sx={{
+            px: { xs: 1, sm: 3 },
+            py: { xs: 2, sm: 3 },
+          }}
         >
           <DialogTitle>
             <Box
