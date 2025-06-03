@@ -28,6 +28,51 @@ export const useMealManagement = () => {
     );
   };
 
+  // Função para restaurar refeições do localStorage
+  const restaurarRefeicoes = (refeicoesRestauradas) => {
+    if (!refeicoesRestauradas || !Array.isArray(refeicoesRestauradas)) {
+      console.error('❌ Dados de refeições inválidos para restauração');
+      return false;
+    }
+
+    try {
+      // Validar e limpar os dados antes de restaurar
+      const refeicoesValidas = refeicoesRestauradas.filter(refeicao => {
+        return (
+          refeicao &&
+          refeicao.nome &&
+          refeicao.alimentos &&
+          Array.isArray(refeicao.alimentos) &&
+          refeicao.macros
+        );
+      });
+
+      if (refeicoesValidas.length === 0) {
+        console.warn('⚠️ Nenhuma refeição válida encontrada para restaurar');
+        return false;
+      }
+
+      // Recalcular macros para garantir consistência
+      const refeicoesComMacrosRecalculados = refeicoesValidas.map(refeicao => ({
+        ...refeicao,
+        macros: calcularMacrosRefeicao(refeicao.alimentos)
+      }));
+
+      setRefeicoes(refeicoesComMacrosRecalculados);
+      console.log(`✅ ${refeicoesComMacrosRecalculados.length} refeições restauradas com sucesso`);
+      return true;
+    } catch (error) {
+      console.error('❌ Erro ao restaurar refeições:', error);
+      return false;
+    }
+  };
+
+  // Função para limpar todas as refeições
+  const limparTodasRefeicoes = () => {
+    setRefeicoes([]);
+    setCurrentMeal({ nome: "", alimentos: [] });
+  };
+
   const adicionarAlimento = (selectedFood, quantity) => {
     if (!selectedFood) return false;
 
@@ -207,9 +252,12 @@ export const useMealManagement = () => {
   };
 
   return {
+    // Estado
     refeicoes,
     currentMeal,
     setCurrentMeal,
+    
+    // Funções principais
     calcularTotalDia,
     adicionarAlimento,
     adicionarMultiplosAlimentos,
@@ -223,5 +271,12 @@ export const useMealManagement = () => {
     obterEstatisticasRefeicaoAtual,
     moverRefeicaoParaCima,
     moverRefeicaoParaBaixo,
+    
+    // Novas funções para localStorage
+    restaurarRefeicoes,
+    limparTodasRefeicoes,
+    
+    // Expor setter para casos especiais (compatibilidade)
+    setRefeicoes
   };
 };

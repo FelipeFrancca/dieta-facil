@@ -14,9 +14,13 @@ import {
   Chip,
   FormControlLabel,
   Switch,
+  AlertTitle,
+  IconButton,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import RestoreIcon from "@mui/icons-material/Restore";
+import CloseIcon from "@mui/icons-material/Close";
 import Swal from "sweetalert2";
 
 import { MealCard } from "./components/dietBuilderComponents/MealCard";
@@ -36,6 +40,14 @@ import { categorias } from "./components/alimentosDatabase";
 import PDFGenerator from "./components/PDFGenerator";
 import MacroSummary from "./components/macroSummary";
 
+import {
+  salvarDietaLocal,
+  carregarDietaLocal,
+  existeDietaSalva,
+  getInfoDietaSalva,
+  limparDietaLocal,
+} from "./components/dietBuilderComponents/utils/localStorageUtils";
+
 export default function DietBuilder({ calorias, metaMacros = null }) {
   const [openDialog, setOpenDialog] = useState(false);
   const [openFoodSearch, setOpenFoodSearch] = useState(false);
@@ -53,6 +65,9 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
 
   const [isEditing, setIsEditing] = useState(false);
 
+  const [showRestoreAlert, setShowRestoreAlert] = useState(false);
+  const [dietaInfo, setDietaInfo] = useState(null);
+
   const {
     searchTerm,
     setSearchTerm,
@@ -66,6 +81,7 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
 
   const {
     refeicoes,
+    setRefeicoes,
     currentMeal,
     setCurrentMeal,
     calcularTotalDia,
@@ -79,6 +95,7 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
     duplicarRefeicao,
     moverRefeicaoParaCima,
     moverRefeicaoParaBaixo,
+    restaurarRefeicoes
   } = useMealManagement();
 
   const totalDia = calcularTotalDia();
@@ -107,6 +124,64 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
         (acc, a) => acc + (a.gordura * a.quantidade) / 100,
         0
       ),
+  };
+
+  useEffect(() => {
+    const verificarDietaSalva = () => {
+      if (existeDietaSalva()) {
+        const info = getInfoDietaSalva();
+        if (info && info.quantidadeRefeicoes > 0) {
+          setDietaInfo(info);
+          setShowRestoreAlert(true);
+        }
+      }
+    };
+
+    if (refeicoes.length === 0) {
+      verificarDietaSalva();
+    }
+  }, [refeicoes.length]);
+
+  useEffect(() => {
+    if (refeicoes.length > 0) {
+      salvarDietaLocal(refeicoes, calorias, metaMacros);
+    }
+  }, [refeicoes, calorias, metaMacros]);
+
+  const restaurarDietaSalva = () => {
+    const dietaData = carregarDietaLocal();
+    if (dietaData && dietaData.refeicoes) {
+      const sucesso = restaurarRefeicoes(dietaData.refeicoes);
+
+      if (sucesso) {
+        setShowRestoreAlert(false);
+
+        Swal.fire({
+          title: "🍽️ Dieta Restaurada!",
+          text: `${dietaData.refeicoes.length} refeição${
+            dietaData.refeicoes.length !== 1 ? "ões foram" : " foi"
+          } restaurada${
+            dietaData.refeicoes.length !== 1 ? "s" : ""
+          } com sucesso.`,
+          icon: "success",
+          timer: 3000,
+          showConfirmButton: false,
+        });
+      } else {
+        Swal.fire({
+          title: "❌ Erro ao Restaurar",
+          text: "Não foi possível restaurar a dieta. Os dados podem estar corrompidos.",
+          icon: "error",
+          confirmButtonText: "Entendi",
+        });
+      }
+    }
+  };
+
+  const descartarDietaSalva = () => {
+    limparDietaLocal();
+    setShowRestoreAlert(false);
+    setDietaInfo(null);
   };
 
   useEffect(() => {
@@ -189,7 +264,7 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
   }, [totalComRefeicaoAtual, calorias, metaMacros]);
 
   const handleEditarRefeicao = (id) => {
-    console.log("Tentando editar refeição:", id); // 👈 teste
+    console.log("Tentando editar refeição:", id);
 
     const sucesso = editarRefeicaoExistente(id);
     if (sucesso) {
@@ -311,7 +386,7 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
 
     if (sucesso) {
       setOpenDialog(false);
-      setIsEditing(false); // ← limpa o modo de edição
+      setIsEditing(false);
       Swal.fire({
         title: "🍽️ Refeição Salva!",
         text: "Sua refeição foi atualizada com sucesso.",
@@ -367,6 +442,38 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
       sx={{ boxShadow: "0 8px 32px rgba(0,0,0,0.1)", borderRadius: "10px" }}
     >
       <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+        {/* Alert para restaurar dieta anterior */}
+        {showRestoreAlert && dietaInfo && (
+          <Alert
+            severity="info"
+            sx={{ mb: 3, display: "flex", alignItems: "center" }}
+            action={
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <Button
+                  size="small"
+                  startIcon={<RestoreIcon />}
+                  onClick={restaurarDietaSalva}
+                  variant="contained"
+                >
+                  Restaurar
+                </Button>
+                <IconButton
+                  size="small"
+                  onClick={descartarDietaSalva}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+            }
+          >
+            <AlertTitle>🔄 Dieta Anterior Encontrada</AlertTitle>
+            Encontramos uma dieta com {dietaInfo.quantidadeRefeicoes} refeição
+            {dietaInfo.quantidadeRefeicoes !== 1 ? "ões" : ""} salva em{" "}
+            {new Date(dietaInfo.dataUltimaEdicao).toLocaleDateString("pt-BR")}.
+            Deseja restaurá-la?
+          </Alert>
+        )}
+
         {/* Alertas de Limites */}
         {showCalorieAlert && (
           <Alert severity="warning" sx={{ mb: 2 }}>
@@ -476,7 +583,7 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
                   justifyContent: "space-between",
                   alignItems: "center",
                   mb: 2,
-                  flexDirection: { xs: "column", sm: "row" }, // empilha em telas pequenas
+                  flexDirection: { xs: "column", sm: "row" },
                   gap: 2,
                 }}
               >
@@ -500,8 +607,8 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
             <Button
               onClick={() => {
                 setOpenDialog(false);
-                setIsEditing(false); // ← limpa o modo edição
-                setCurrentMeal({ nome: "", alimentos: [] }); // ← limpa a refeição
+                setIsEditing(false);
+                setCurrentMeal({ nome: "", alimentos: [] });
               }}
             >
               Cancelar
