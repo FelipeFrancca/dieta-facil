@@ -5,6 +5,7 @@ import TMBForm from "./components/TMBForm";
 import MacronutrientAdjuster from "./components/components/macronutrientAdjuster";
 import MacroSummary from "./components/components/macroSummary";
 import DietBuilder from "./components/DietBuilder";
+import Copyright from "./components/copyright/Copyright";
 
 export default function App() {
   const [calorias, setCalorias] = useState(null);
@@ -67,6 +68,7 @@ export default function App() {
             macrosRecomendados={macrosPersonalizados}
           />
         )}
+        <Copyright />
       </Container>
     </Box>
   );

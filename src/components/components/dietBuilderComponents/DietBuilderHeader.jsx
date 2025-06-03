@@ -1,16 +1,14 @@
-// components/DietBuilderHeader.jsx
-import React from 'react';
 import { Box, Typography, Chip, Button } from "@mui/material";
 import RestaurantIcon from "@mui/icons-material/Restaurant";
 import AddIcon from "@mui/icons-material/Add";
 import GetAppIcon from "@mui/icons-material/GetApp";
 
-export const DietBuilderHeader = ({ 
-  calorias, 
-  refeicoes, 
-  onNewMeal, 
-  onGeneratePDF, 
-  pdfGenerating 
+export const DietBuilderHeader = ({
+  calorias,
+  refeicoes,
+  onNewMeal,
+  onGeneratePDF,
+  pdfGenerating,
 }) => (
   <Box
     sx={{
@@ -36,11 +34,7 @@ export const DietBuilderHeader = ({
       )}
     </Box>
     <Box sx={{ display: "flex", gap: 2, flexShrink: 0 }}>
-      <Button
-        variant="outlined"
-        startIcon={<AddIcon />}
-        onClick={onNewMeal}
-      >
+      <Button variant="outlined" startIcon={<AddIcon />} onClick={onNewMeal}>
         Nova Refeição
       </Button>
       {refeicoes.length > 0 && (

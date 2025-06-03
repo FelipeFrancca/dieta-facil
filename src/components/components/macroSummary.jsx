@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Paper,
   Typography,
@@ -13,7 +12,7 @@ import { Assessment as AssessmentIcon } from "@mui/icons-material";
 const MacroSummary = ({
   totalDia,
   calorias,
-  titulo = "📊 Resumo Nutricional do Dia",
+  titulo = "📊 Resumo nutricional",
   mostrarProgresso = true,
   gradiente = "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
   compacto = false,
