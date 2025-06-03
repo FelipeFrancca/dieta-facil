@@ -45,23 +45,6 @@ export default function App() {
           />
         )}
 
-        {calorias && macrosPersonalizados && (
-          <MacroSummary
-            totalDia={{
-              proteina: macrosPersonalizados.macros.proteina,
-              carbo: macrosPersonalizados.macros.carboidrato,
-              gordura: macrosPersonalizados.macros.gordura,
-              calorias: calorias,
-            }}
-            calorias={calorias}
-            metaMacros={{
-              proteina: macrosPersonalizados.macros.proteina,
-              carbo: macrosPersonalizados.macros.carboidrato,
-              gordura: macrosPersonalizados.macros.gordura,
-            }}
-          />
-        )}
-
         {calorias && (
           <DietBuilder
             calorias={calorias}

@@ -12,7 +12,7 @@ import { Assessment as AssessmentIcon } from "@mui/icons-material";
 const MacroSummary = ({
   totalDia,
   calorias,
-  titulo = "📊 Resumo nutricional",
+  titulo = "📊 Resumo nutricional do dia",
   mostrarProgresso = true,
   gradiente = "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
   compacto = false,
