@@ -706,6 +706,7 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
                   selectedFood={selectedFood}
                   foodQuantity={foodQuantity}
                   onQuantityChange={setFoodQuantity}
+                  onUnitChange={setFoodQuantity}
                 />
               </>
             )}
