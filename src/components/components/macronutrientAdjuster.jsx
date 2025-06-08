@@ -344,7 +344,7 @@ export default function MacronutrientAdjuster({
         </Box>
 
         <Collapse in={!collapsed.main}>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 3, justifyContent: 'center', alignContent: 'center', alignItems:'center' }}>
             {/* Alert de Recomendação */}
             <Alert severity="info">
               <Typography variant="body2">
@@ -354,10 +354,10 @@ export default function MacronutrientAdjuster({
             </Alert>
 
             {/* Grid Principal - Gráfico e Controles */}
-            <Grid container spacing={3}>
+            <Grid container spacing={2}>
               {/* Seção do Gráfico de Pizza */}
               <Grid item xs={12} lg={6}>
-                <Paper sx={{ p: 3, height: "100%" }}>
+                <Paper sx={{ p: 3 }}>
                   <CollapsibleHeader
                     title="Distribuição Visual"
                     icon={<PieChartIcon sx={{ color: "#667eea" }} />}
@@ -415,7 +415,7 @@ export default function MacronutrientAdjuster({
 
               {/* Seção de Controles de Ajuste */}
               <Grid item xs={12} lg={6}>
-                <Paper sx={{ p: 3, height: "100%" }}>
+                <Paper sx={{ p: 3}}>
                   <CollapsibleHeader
                     title="Controles de Ajuste"
                     icon={<SettingsIcon sx={{ color: "#667eea" }} />}
