@@ -31,7 +31,6 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DragHandleIcon from "@mui/icons-material/DragHandle";
 import PieChartIcon from "@mui/icons-material/PieChart";
 import SettingsIcon from "@mui/icons-material/Settings";
-import SummaryIcon from "@mui/icons-material/Assignment";
 
 export default function MacronutrientAdjuster({
   calorias = 2000,
@@ -51,15 +50,13 @@ export default function MacronutrientAdjuster({
     gordura: 0,
   });
 
-  // Estados para controlar collapse das seções
   const [collapsed, setCollapsed] = useState({
     chart: false,
     controls: false,
     summary: false,
-    main: false, // Para colapsar o componente inteiro
+    main: false,
   });
 
-  // Valores padrão baseados em sexo e objetivo (mais refinados)
   const getDefaultMacros = () => {
     const defaults = {
       masculino: {
@@ -76,7 +73,6 @@ export default function MacronutrientAdjuster({
     return defaults[sexo]?.[objetivo] || defaults.masculino.manter;
   };
 
-  // Inicializar com valores padrão
   useEffect(() => {
     if (calorias) {
       const defaultPercentuais = getDefaultMacros();
@@ -98,7 +94,6 @@ export default function MacronutrientAdjuster({
 
     setMacros(novosMacros);
 
-    // Notificar componente pai sobre as mudanças
     if (onMacrosChange) {
       onMacrosChange({
         macros: novosMacros,
@@ -111,7 +106,6 @@ export default function MacronutrientAdjuster({
   const handleSliderChange = (macro, value) => {
     const novosPercentuais = { ...percentuais, [macro]: value };
 
-    // Calcular diferença
     const somaParcial = novosPercentuais[macro];
     const outrosMacros = Object.keys(novosPercentuais).filter(
       (key) => key !== macro
@@ -121,7 +115,6 @@ export default function MacronutrientAdjuster({
       0
     );
 
-    // Se a soma ultrapassar 100, ajustar proporcionalmente os outros
     if (somaParcial + somaOutros > 100) {
       const restante = 100 - somaParcial;
       const proporcao = restante / somaOutros;
@@ -151,7 +144,7 @@ export default function MacronutrientAdjuster({
 
   const validarPercentuais = () => {
     const total = Object.values(percentuais).reduce((sum, val) => sum + val, 0);
-    return Math.abs(total - 100) < 1; // Tolerância de 1%
+    return Math.abs(total - 100) < 1;
   };
 
   const toggleCollapse = (section) => {
@@ -161,7 +154,6 @@ export default function MacronutrientAdjuster({
     }));
   };
 
-  // Dados para o gráfico de pizza
   const chartData = [
     {
       name: "Proteínas",
@@ -256,7 +248,6 @@ export default function MacronutrientAdjuster({
     );
   }
 
-  // Componente de cabeçalho colapsável
   const CollapsibleHeader = ({
     title,
     icon,
@@ -295,7 +286,7 @@ export default function MacronutrientAdjuster({
         borderRadius: "10px",
         border: collapsed.main ? "2px dashed #ddd" : "none",
         maxWidth: "100%",
-        width: "100%"
+        width: "100%",
       }}
     >
       <CardContent sx={{ p: collapsed.main ? 2 : 3 }}>
@@ -307,7 +298,7 @@ export default function MacronutrientAdjuster({
             justifyContent: "space-between",
             flexWrap: "wrap",
             gap: 2,
-            mb: 2
+            mb: 2,
           }}
         >
           <Box
@@ -319,7 +310,7 @@ export default function MacronutrientAdjuster({
               borderRadius: 1,
               "&:hover": { backgroundColor: "rgba(0,0,0,0.04)" },
               minWidth: 0,
-              flex: "1 1 auto"
+              flex: "1 1 auto",
             }}
             onClick={() => toggleCollapse("main")}
           >
@@ -415,7 +406,14 @@ export default function MacronutrientAdjuster({
 
               {/* Seção de Controles de Ajuste */}
               <Grid item xs={12} lg={6}>
-                <Paper sx={{ p: 3}}>
+                <Paper
+                  sx={{
+                    p: { xs: 2, sm: 3 },
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
                   <CollapsibleHeader
                     title="Controles de Ajuste"
                     icon={<SettingsIcon sx={{ color: "#667eea" }} />}
@@ -423,7 +421,9 @@ export default function MacronutrientAdjuster({
                   />
                   <Collapse in={!collapsed.controls}>
                     <Divider sx={{ my: 2 }} />
-                    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                    <Box
+                      sx={{ display: "flex", flexDirection: "column", gap: 3 }}
+                    >
                       {Object.keys(percentuais).map((macro) => {
                         const info = getMacroInfo(macro);
                         const cor =
@@ -437,12 +437,18 @@ export default function MacronutrientAdjuster({
                         const nomeDisplay =
                           macro === "carboidrato"
                             ? "Carboidratos"
-                            : macro.charAt(0).toUpperCase() + macro.slice(1) + "s";
+                            : macro.charAt(0).toUpperCase() +
+                              macro.slice(1) +
+                              "s";
 
                         return (
                           <Box key={macro}>
                             <Box
-                              sx={{ display: "flex", alignItems: "center", mb: 2 }}
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                mb: 2,
+                              }}
                             >
                               <Typography
                                 variant="subtitle1"
@@ -475,6 +481,7 @@ export default function MacronutrientAdjuster({
                                 step={1}
                                 sx={{
                                   flex: 1,
+                                  minWidth: 0,
                                   "& .MuiSlider-thumb": {
                                     backgroundColor: cor,
                                   },
@@ -489,7 +496,7 @@ export default function MacronutrientAdjuster({
                                   handleDirectInput(macro, e.target.value)
                                 }
                                 size="small"
-                                sx={{ width: 80 }}
+                                sx={{ width: 80, flexShrink: 0 }}
                                 InputProps={{
                                   endAdornment: "%",
                                 }}
@@ -500,13 +507,19 @@ export default function MacronutrientAdjuster({
                               sx={{
                                 display: "flex",
                                 justifyContent: "space-between",
-                                mb: 1
+                                mb: 1,
                               }}
                             >
-                              <Typography variant="body2" color="text.secondary">
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
                                 {macros[macro]}g por dia
                               </Typography>
-                              <Typography variant="body2" color="text.secondary">
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
                                 {Math.round(
                                   macros[macro] * (macro === "gordura" ? 9 : 4)
                                 )}{" "}
@@ -514,9 +527,12 @@ export default function MacronutrientAdjuster({
                               </Typography>
                             </Box>
 
-                            <Typography variant="caption" color="text.secondary">
-                              {info.beneficios} | Faixa recomendada: {info.min} -{" "}
-                              {info.max}
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              {info.beneficios} | Faixa recomendada: {info.min}{" "}
+                              - {info.max}
                             </Typography>
                           </Box>
                         );
