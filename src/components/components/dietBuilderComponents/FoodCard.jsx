@@ -1,5 +1,4 @@
 // components/FoodCard.jsx
-import React from 'react';
 import { Card, Typography, Chip, Box, Tooltip } from "@mui/material";
 import EggAltIcon from '@mui/icons-material/EggAlt';
 import BakeryDiningIcon from '@mui/icons-material/BakeryDining';

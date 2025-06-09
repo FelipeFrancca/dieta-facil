@@ -28,7 +28,6 @@ import InfoIcon from "@mui/icons-material/Info";
 import TuneIcon from "@mui/icons-material/Tune";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import DragHandleIcon from "@mui/icons-material/DragHandle";
 import PieChartIcon from "@mui/icons-material/PieChart";
 import SettingsIcon from "@mui/icons-material/Settings";
 
@@ -267,7 +266,6 @@ export default function MacronutrientAdjuster({
       onClick={() => toggleCollapse(section)}
     >
       <Box sx={{ display: "flex", alignItems: "center" }}>
-        <DragHandleIcon sx={{ mr: 1, color: "text.secondary", fontSize: 18 }} />
         {icon}
         <Typography variant="h6" sx={{ fontWeight: "bold", ml: 1 }}>
           {title}
@@ -314,9 +312,8 @@ export default function MacronutrientAdjuster({
             }}
             onClick={() => toggleCollapse("main")}
           >
-            <DragHandleIcon sx={{ mr: 1, color: "text.secondary" }} />
             <TuneIcon sx={{ mr: 2, color: "#667eea" }} />
-            <Typography variant="h5" sx={{ fontWeight: "bold", minWidth: 0 }}>
+            <Typography variant="h5" sx={{ fontWeight: "bold", minWidth: 0, textAlign: 'center' }}>
               Ajuste de Macronutrientes
             </Typography>
             <IconButton size="small" sx={{ ml: 1 }}>
@@ -348,7 +345,7 @@ export default function MacronutrientAdjuster({
             <Grid container spacing={2}>
               {/* Seção do Gráfico de Pizza */}
               <Grid item xs={12} lg={6}>
-                <Paper sx={{ p: 3 }}>
+                <Paper sx={{ p: 3, textAlign: 'center' }}>
                   <CollapsibleHeader
                     title="Distribuição Visual"
                     icon={<PieChartIcon sx={{ color: "#667eea" }} />}
@@ -404,7 +401,6 @@ export default function MacronutrientAdjuster({
                 </Paper>
               </Grid>
 
-              {/* Seção de Controles de Ajuste */}
               <Grid item xs={12} lg={6}>
                 <Paper
                   sx={{
@@ -412,6 +408,7 @@ export default function MacronutrientAdjuster({
                     height: "100%",
                     display: "flex",
                     flexDirection: "column",
+                    textAlign: 'center'
                   }}
                 >
                   <CollapsibleHeader

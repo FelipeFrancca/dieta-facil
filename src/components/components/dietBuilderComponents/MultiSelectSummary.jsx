@@ -1,14 +1,14 @@
 // components/MultiSelectSummary.jsx
-import React from "react";
+import { useState } from "react";
 import {
   Box,
   Typography,
-  TextField,
   Card,
   Grid,
   Divider,
   Chip,
 } from "@mui/material";
+import { FoodQuantitySelector } from "./FoodQuantitySelector";
 
 export const MultiSelectSummary = ({
   selectedFoods,
@@ -32,6 +32,14 @@ export const MultiSelectSummary = ({
       },
       { calorias: 0, proteina: 0, carbo: 0, gordura: 0 }
     );
+  };
+  const [multiSelectQuantities, setMultiSelectQuantities] = useState({});
+
+const handleQuantityChange = (foodKey, quantity) => {
+    setMultiSelectQuantities({
+      ...multiSelectQuantities,
+      [foodKey]: quantity,
+    });
   };
 
   const totals = calculateTotals();
@@ -84,16 +92,20 @@ export const MultiSelectSummary = ({
                       {Math.round(food.gordura * factor)}g
                     </Typography>
                   </Box>
-                  <TextField
-                    label="Quantidade (g)"
-                    type="number"
-                    value={quantity}
-                    onChange={(e) =>
-                      onQuantityChange(foodKey, Number(e.target.value))
+                  <FoodQuantitySelector
+                    key={`${food.nome}_${food.calorias}`}
+                    selectedFood={food}
+                    foodQuantity={
+                      multiSelectQuantities[`${food.nome}_${food.calorias}`] ||
+                      100
                     }
-                    size="small"
-                    sx={{ width: 120 }}
-                    inputProps={{ min: 1, max: 9999 }}
+                    onQuantityChange={(value) =>
+                      handleQuantityChange(
+                        `${food.nome}_${food.calorias}`,
+                        value
+                      )
+                    }
+                    onUnitChange={() => {}} // opcional, se não quiser controlar unidade externamente
                   />
                 </Box>
               </Box>

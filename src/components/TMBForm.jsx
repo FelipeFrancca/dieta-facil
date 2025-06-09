@@ -243,6 +243,7 @@ export default function TMBForm({ onCalculate, calorias }) {
                 fontWeight: "bold",
                 fontSize: { xs: "1.5rem", md: "2rem" },
                 color: "#2d3748",
+                textAlign: 'center'
               }}
             >
               Vamos calcular sua taxa metabólica basal

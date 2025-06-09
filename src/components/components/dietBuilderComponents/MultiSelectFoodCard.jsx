@@ -1,89 +1,86 @@
 // components/MultiSelectFoodCard.jsx
 import React from 'react';
-import { Card, Typography, Checkbox, Box, Skeleton } from "@mui/material";
+import { Box, Typography, CircularProgress } from '@mui/material';
+import { FoodCard } from './FoodCard';
+import { FoodQuantitySelector } from './FoodQuantitySelector';
 
-export const MultiSelectFoodCard = ({ 
-  localResults, 
-  searchResults, 
-  loading, 
-  selectedFoods, 
-  onFoodSelect 
+export const MultiSelectFoodCard = ({
+  localResults,
+  searchResults,
+  loading,
+  selectedFoods,
+  onFoodSelect,
+  multiSelectQuantities,
+  onQuantityChange
 }) => {
+  const getFoodKey = (food) => `${food.nome}_${food.calorias}`;
+  
   const isSelected = (food) => {
-    return selectedFoods.find(f => `${f.nome}_${f.calorias}` === `${food.nome}_${food.calorias}`);
+    const foodKey = getFoodKey(food);
+    return selectedFoods.find(f => getFoodKey(f) === foodKey);
   };
 
-  const FoodCardContent = ({ alimento }) => (
-    <Card
-      sx={{
-        mb: 2,
-        p: 2,
-        cursor: "pointer",
-        border: isSelected(alimento) ? "2px solid #667eea" : "1px solid #e0e0e0",
-        backgroundColor: isSelected(alimento) ? "#f3f4ff" : "#fff",
-        "&:hover": { backgroundColor: isSelected(alimento) ? "#e8eaff" : "#f5f5f5" },
-        transition: "all 0.2s ease-in-out",
-      }}
-      onClick={() => onFoodSelect(alimento)}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-        <Checkbox
-          checked={!!isSelected(alimento)}
-          color="primary"
-          sx={{ mt: -1, mr: 2 }}
+  const renderFoodWithQuantity = (food, index) => {
+    const foodKey = getFoodKey(food);
+    const selected = isSelected(food);
+    
+    return (
+      <Box key={`${foodKey}_${index}`} sx={{ mb: 2 }}>
+        <FoodCard
+          alimento={food}
+          isSelected={!!selected}
+          onClick={onFoodSelect}
         />
-        <Box sx={{ flex: 1 }}>
-          <Typography
-            variant="subtitle1"
-            sx={{ 
-              fontWeight: "bold", 
-              textTransform: "capitalize",
-              color: isSelected(alimento) ? "#667eea" : "inherit"
-            }}
-          >
-            {alimento.nome}
-          </Typography>
-          <Typography variant="body2" color="textSecondary">
-            {alimento.calorias} kcal | P: {alimento.proteina}g | C: {alimento.carbo}g | G: {alimento.gordura}g (por 100g)
-          </Typography>
-        </Box>
+        
+        {/* Renderizar o seletor de quantidade apenas se o alimento estiver selecionado */}
+        {selected && (
+          <Box sx={{ mt: 1, ml: 2 }}>
+            <FoodQuantitySelector
+              selectedFood={food}
+              foodQuantity={multiSelectQuantities[foodKey] || 100}
+              onQuantityChange={(value) => onQuantityChange(foodKey, value)}
+              onUnitChange={() => {}}
+            />
+          </Box>
+        )}
       </Box>
-    </Card>
-  );
+    );
+  };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  // Combinar resultados locais e da API, removendo duplicatas
+  const allResults = [...localResults];
+  searchResults.forEach(apiFood => {
+    const exists = localResults.some(localFood => 
+      localFood.nome.toLowerCase() === apiFood.nome.toLowerCase()
+    );
+    if (!exists) {
+      allResults.push(apiFood);
+    }
+  });
+
+  if (allResults.length === 0) {
+    return (
+      <Typography variant="body2" color="textSecondary" sx={{ textAlign: "center", py: 2 }}>
+        Nenhum alimento encontrado. Tente uma busca diferente.
+      </Typography>
+    );
+  }
 
   return (
-    <>
-      {/* Resultados locais */}
-      {localResults.map((alimento, index) => (
-        <FoodCardContent key={`local-${index}`} alimento={alimento} />
-      ))}
-
-      {/* Skeleton loading */}
-      {loading &&
-        Array.from({ length: 4 }).map((_, index) => (
-          <Card key={`skeleton-${index}`} sx={{ mb: 2, p: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-              <Checkbox disabled sx={{ mt: -1, mr: 2 }} />
-              <Box sx={{ flex: 1 }}>
-                <Skeleton variant="text" width="60%" height={24} />
-                <Skeleton variant="text" width="80%" height={20} />
-              </Box>
-            </Box>
-          </Card>
-        ))}
-
-      {/* Resultados da API (filtrados para evitar duplicatas) */}
-      {!loading &&
-        searchResults
-          .filter(
-            (a) =>
-              !localResults.find(
-                (l) => l.nome.toLowerCase() === a.nome.toLowerCase()
-              )
-          )
-          .map((alimento, index) => (
-            <FoodCardContent key={`api-${index}`} alimento={alimento} />
-          ))}
-    </>
+    <Box>
+      <Typography variant="subtitle2" sx={{ mb: 2, color: '#666' }}>
+        {allResults.length} alimento{allResults.length !== 1 ? 's' : ''} encontrado{allResults.length !== 1 ? 's' : ''}
+      </Typography>
+      
+      {allResults.map((food, index) => renderFoodWithQuantity(food, index))}
+    </Box>
   );
 };

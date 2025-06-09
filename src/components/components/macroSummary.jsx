@@ -19,29 +19,39 @@ const MacroSummary = ({
   mostrarPercentuais = true,
   metaMacros = null,
 }) => {
-  const percentualCalorias = calorias
-    ? Math.round((totalDia.calorias / calorias) * 100)
+  // Garantir que os valores são números válidos
+  const caloriasSafe = Math.max(0, totalDia?.calorias || 0);
+  const proteinaSafe = Math.max(0, totalDia?.proteina || 0);
+  const carboSafe = Math.max(0, totalDia?.carbo || 0);
+  const gorduraSafe = Math.max(0, totalDia?.gordura || 0);
+  const gramasSafe = Math.max(0, totalDia?.gramas || 0);
+
+  const percentualCalorias = calorias && calorias > 0
+    ? Math.round((caloriasSafe / calorias) * 100)
     : 0;
 
   const calcularPercentualMacro = (valorGramas, tipoMacro) => {
-    if (totalDia.calorias <= 0) return 0;
+    if (caloriasSafe <= 0) return 0;
 
     const caloriasPorGrama = tipoMacro === "gordura" ? 9 : 4;
     const caloriasDoMacro = valorGramas * caloriasPorGrama;
 
-    return Math.round((caloriasDoMacro / totalDia.calorias) * 100);
+    return Math.round((caloriasDoMacro / caloriasSafe) * 100);
   };
 
   const calcularPercentualMeta = (valor, meta) => {
-    return meta ? Math.round((valor / meta) * 100) : 0;
+    return meta && meta > 0 ? Math.round((valor / meta) * 100) : 0;
   };
 
-  const formatarValor = (valor) => Math.round(valor);
+  const formatarValor = (valor) => {
+    if (valor === 0) return 0;
+    return valor >= 10 ? Math.round(valor) : Math.round(valor * 10) / 10;
+  };
 
   const macroData = [
     {
       nome: "Calorias",
-      valor: formatarValor(totalDia.calorias),
+      valor: formatarValor(caloriasSafe),
       unidade: "kcal",
       meta: calorias,
       percentualMeta: percentualCalorias,
@@ -51,41 +61,67 @@ const MacroSummary = ({
     },
     {
       nome: "Proteínas",
-      valor: formatarValor(totalDia.proteina),
+      valor: formatarValor(proteinaSafe),
       unidade: "g",
       meta: metaMacros?.proteina,
       percentualMeta: calcularPercentualMeta(
-        totalDia.proteina,
+        proteinaSafe,
         metaMacros?.proteina
       ),
-      percentualTotal: calcularPercentualMacro(totalDia.proteina, "proteina"),
+      percentualTotal: calcularPercentualMacro(proteinaSafe, "proteina"),
       cor: "#e53e3e",
       icon: "💪",
     },
     {
       nome: "Carboidratos",
-      valor: formatarValor(totalDia.carbo),
+      valor: formatarValor(carboSafe),
       unidade: "g",
       meta: metaMacros?.carbo,
-      percentualMeta: calcularPercentualMeta(totalDia.carbo, metaMacros?.carbo),
-      percentualTotal: calcularPercentualMacro(totalDia.carbo, "carbo"),
+      percentualMeta: calcularPercentualMeta(carboSafe, metaMacros?.carbo),
+      percentualTotal: calcularPercentualMacro(carboSafe, "carbo"),
       cor: "#3182ce",
       icon: "🌾",
     },
     {
       nome: "Gorduras",
-      valor: formatarValor(totalDia.gordura),
+      valor: formatarValor(gorduraSafe),
       unidade: "g",
       meta: metaMacros?.gordura,
       percentualMeta: calcularPercentualMeta(
-        totalDia.gordura,
+        gorduraSafe,
         metaMacros?.gordura
       ),
-      percentualTotal: calcularPercentualMacro(totalDia.gordura, "gordura"),
+      percentualTotal: calcularPercentualMacro(gorduraSafe, "gordura"),
       cor: "#38a169",
       icon: "🥑",
     },
   ];
+
+  // Verificar se há dados para exibir
+  const temDados = caloriasSafe > 0 || proteinaSafe > 0 || carboSafe > 0 || gorduraSafe > 0;
+
+  if (!temDados) {
+    return (
+      <Paper
+        sx={{
+          p: 3,
+          background: "linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)",
+          color: "#1976d2",
+          borderRadius: 3,
+          boxShadow: "0 4px 16px rgba(0,0,0,0.05)",
+          textAlign: "center",
+        }}
+      >
+        <AssessmentIcon sx={{ fontSize: 48, mb: 2, opacity: 0.7 }} />
+        <Typography variant="h6" sx={{ fontWeight: "bold", mb: 1 }}>
+          Nenhuma refeição adicionada
+        </Typography>
+        <Typography variant="body2" sx={{ opacity: 0.8 }}>
+          Adicione refeições para ver o resumo nutricional do dia
+        </Typography>
+      </Paper>
+    );
+  }
 
   if (compacto) {
     return (
@@ -125,6 +161,15 @@ const MacroSummary = ({
             </Grid>
           ))}
         </Grid>
+        
+        {/* Mostrar peso total se disponível */}
+        {gramasSafe > 0 && (
+          <Box sx={{ mt: 2, textAlign: "center" }}>
+            <Typography variant="caption" sx={{ opacity: 0.9 }}>
+              ⚖️ Peso total: {formatarValor(gramasSafe)}g
+            </Typography>
+          </Box>
+        )}
       </Paper>
     );
   }
@@ -182,7 +227,7 @@ const MacroSummary = ({
               </Box>
 
               {/* Barra de progresso para metas */}
-              {mostrarProgresso && macro.meta && (
+              {mostrarProgresso && macro.meta && macro.meta > 0 && (
                 <Box sx={{ mb: 1 }}>
                   <LinearProgress
                     variant="determinate"
@@ -192,7 +237,9 @@ const MacroSummary = ({
                       borderRadius: 3,
                       bgcolor: "rgba(255,255,255,0.2)",
                       "& .MuiLinearProgress-bar": {
-                        bgcolor: "rgba(255,255,255,0.8)",
+                        bgcolor: macro.percentualMeta > 100 
+                          ? "rgba(255,193,7,0.9)" // Amarelo para excesso
+                          : "rgba(255,255,255,0.8)",
                         borderRadius: 3,
                       },
                     }}
@@ -200,12 +247,13 @@ const MacroSummary = ({
                   <Typography variant="caption" sx={{ opacity: 0.8 }}>
                     {macro.percentualMeta}% da meta ({macro.meta}
                     {macro.unidade})
+                    {macro.percentualMeta > 100 && " - Excedido!"}
                   </Typography>
                 </Box>
               )}
 
               {/* Percentual dos macros */}
-              {mostrarPercentuais && macro.nome !== "Calorias" && (
+              {mostrarPercentuais && macro.nome !== "Calorias" && macro.percentualTotal > 0 && (
                 <Typography variant="caption" sx={{ opacity: 0.8 }}>
                   {macro.percentualTotal}% do total calórico
                 </Typography>
@@ -223,7 +271,7 @@ const MacroSummary = ({
       </Grid>
 
       {/* Resumo adicional se houver dados suficientes */}
-      {totalDia.calorias > 0 && (
+      {caloriasSafe > 0 && (
         <>
           <Divider sx={{ my: 2, borderColor: "rgba(255,255,255,0.2)" }} />
           <Box
@@ -232,15 +280,21 @@ const MacroSummary = ({
               justifyContent: "space-between",
               alignItems: "center",
               flexWrap: "wrap",
-              gap: 1,
+              gap: 2,
             }}
           >
-            <Typography variant="body2" sx={{ opacity: 0.9 }}>
-              <strong>Distribuição:</strong> P{macroData[1].percentualTotal}% |
-              C{macroData[2].percentualTotal}% | G{macroData[3].percentualTotal}
-              %
-            </Typography>
-            {calorias && (
+            <Box>
+              <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                <strong>Distribuição:</strong> P{macroData[1].percentualTotal}% |
+                C{macroData[2].percentualTotal}% | G{macroData[3].percentualTotal}%
+              </Typography>
+              {gramasSafe > 0 && (
+                <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
+                  <strong>Peso total:</strong> ⚖️ {formatarValor(gramasSafe)}g
+                </Typography>
+              )}
+            </Box>
+            {calorias && calorias > 0 && (
               <Typography variant="body2" sx={{ opacity: 0.9 }}>
                 <strong>
                   {percentualCalorias < 90 && "🔻 Abaixo da meta"}

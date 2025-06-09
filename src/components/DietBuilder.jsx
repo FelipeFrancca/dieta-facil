@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -12,8 +12,6 @@ import {
   CardContent,
   Alert,
   Chip,
-  FormControlLabel,
-  Switch,
   AlertTitle,
   IconButton,
 } from "@mui/material";
@@ -26,15 +24,17 @@ import Swal from "sweetalert2";
 import { MealCard } from "./components/dietBuilderComponents/MealCard";
 import { EmptyMealsState } from "./components/dietBuilderComponents/EmptyMealsState";
 import { FoodSearchCategories } from "./components/dietBuilderComponents/FoodSearchCategories";
-import { FoodSearchResults } from "./components/dietBuilderComponents/FoodSearchResults";
-import { FoodQuantitySelector } from "./components/dietBuilderComponents/FoodQuantitySelector";
 import { CurrentMealFoods } from "./components/dietBuilderComponents/CurrentMealFoods";
 import { DietBuilderHeader } from "./components/dietBuilderComponents/DietBuilderHeader";
 import { MultiSelectFoodCard } from "./components/dietBuilderComponents/MultiSelectFoodCard";
-import { MultiSelectSummary } from "./components/dietBuilderComponents/MultiSelectSummary";
 
 import { useFoodSearch } from "./components/dietBuilderComponents/hooks/useFoodSearch";
 import { useMealManagement } from "./components/dietBuilderComponents/hooks/useMealManagement";
+import {
+  calcularNutrientes,
+  calcularNutrientesDia,
+  gerarUnidadesDisponiveis,
+} from "./components/dietBuilderComponents/utils/nutrientCalculator";
 
 import { categorias } from "./components/alimentosDatabase";
 import PDFGenerator from "./components/PDFGenerator";
@@ -52,21 +52,13 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
   const [openDialog, setOpenDialog] = useState(false);
   const [openFoodSearch, setOpenFoodSearch] = useState(false);
   const [pdfGenerating, setPdfGenerating] = useState(false);
-
-  const [selectedFood, setSelectedFood] = useState(null);
-  const [foodQuantity, setFoodQuantity] = useState(100);
-
-  const [multiSelectMode, setMultiSelectMode] = useState(true);
   const [selectedFoods, setSelectedFoods] = useState([]);
   const [multiSelectQuantities, setMultiSelectQuantities] = useState({});
-
-  const [showCalorieAlert, setShowCalorieAlert] = useState(false);
-  const [showMacroAlerts, setShowMacroAlerts] = useState({});
-
   const [isEditing, setIsEditing] = useState(false);
-
   const [showRestoreAlert, setShowRestoreAlert] = useState(false);
   const [dietaInfo, setDietaInfo] = useState(null);
+
+  const mealNameSuggestions = ["Café da manhã", "Almoço", "Janta", "Lanche"];
 
   const {
     searchTerm,
@@ -78,14 +70,10 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
     buscarPorCategoriaHandler,
     limparBusca,
   } = useFoodSearch();
-
   const {
     refeicoes,
-    setRefeicoes,
     currentMeal,
     setCurrentMeal,
-    calcularTotalDia,
-    adicionarAlimento,
     adicionarMultiplosAlimentos,
     removerAlimento,
     salvarRefeicao,
@@ -95,50 +83,115 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
     duplicarRefeicao,
     moverRefeicaoParaCima,
     moverRefeicaoParaBaixo,
-    restaurarRefeicoes
+    restaurarRefeicoes,
   } = useMealManagement();
 
-  const totalDia = calcularTotalDia();
-  const totalComRefeicaoAtual = {
-    calorias:
-      totalDia.calorias +
-      currentMeal.alimentos.reduce(
-        (acc, a) => acc + (a.calorias * a.quantidade) / 100,
-        0
-      ),
-    proteina:
-      totalDia.proteina +
-      currentMeal.alimentos.reduce(
-        (acc, a) => acc + (a.proteina * a.quantidade) / 100,
-        0
-      ),
-    carbo:
-      totalDia.carbo +
-      currentMeal.alimentos.reduce(
-        (acc, a) => acc + (a.carbo * a.quantidade) / 100,
-        0
-      ),
-    gordura:
-      totalDia.gordura +
-      currentMeal.alimentos.reduce(
-        (acc, a) => acc + (a.gordura * a.quantidade) / 100,
-        0
-      ),
+  const totalDia = calcularNutrientesDia(refeicoes);
+
+  const calcularNutrientesRefeicaoAtual = () => {
+    if (!currentMeal.alimentos || currentMeal.alimentos.length === 0) {
+      return { calorias: 0, proteina: 0, carbo: 0, gordura: 0, gramas: 0 };
+    }
+
+    return currentMeal.alimentos.reduce(
+      (acc, alimento) => {
+        // Gerar unidades disponíveis para cada alimento
+        const unidadesDisponiveis = gerarUnidadesDisponiveis(alimento);
+
+        // Usar a função calcularNutrientes que já considera as unidades corretamente
+        const nutrientes = calcularNutrientes(
+          alimento,
+          alimento.quantidade,
+          alimento.unidade || "gramas",
+          unidadesDisponiveis
+        );
+
+        return {
+          calorias: acc.calorias + nutrientes.calorias,
+          proteina: acc.proteina + nutrientes.proteina,
+          carbo: acc.carbo + nutrientes.carbo,
+          gordura: acc.gordura + nutrientes.gordura,
+          gramas: acc.gramas + nutrientes.gramas,
+        };
+      },
+      { calorias: 0, proteina: 0, carbo: 0, gordura: 0, gramas: 0 }
+    );
   };
 
-  useEffect(() => {
-    const verificarDietaSalva = () => {
-      if (existeDietaSalva()) {
-        const info = getInfoDietaSalva();
-        if (info && info.quantidadeRefeicoes > 0) {
-          setDietaInfo(info);
-          setShowRestoreAlert(true);
-        }
-      }
-    };
+  const totalComRefeicaoAtual = () => {
+    const nutrientesRefeicaoAtual = calcularNutrientesRefeicaoAtual();
 
-    if (refeicoes.length === 0) {
-      verificarDietaSalva();
+    return {
+      calorias: totalDia.calorias + nutrientesRefeicaoAtual.calorias,
+      proteina: totalDia.proteina + nutrientesRefeicaoAtual.proteina,
+      carbo: totalDia.carbo + nutrientesRefeicaoAtual.carbo,
+      gordura: totalDia.gordura + nutrientesRefeicaoAtual.gordura,
+      gramas: totalDia.gramas + nutrientesRefeicaoAtual.gramas,
+    };
+  };
+
+  const totaisAtuais = totalComRefeicaoAtual();
+
+  const alertConfig = {
+    calorias: {
+      emoji: "🚨",
+      title: "Limite de Calorias Atingido!",
+      color: "#f44336",
+    },
+    proteina: {
+      emoji: "🥩",
+      title: "Limite de Proteínas Atingido!",
+      color: "#2196f3",
+    },
+    carbo: {
+      emoji: "🍞",
+      title: "Limite de Carboidratos Atingido!",
+      color: "#ff9800",
+    },
+    gordura: {
+      emoji: "🥑",
+      title: "Limite de Gorduras Atingido!",
+      color: "#4caf50",
+    },
+  };
+
+  const showAlert = (type, current, target) => {
+    const config = alertConfig[type];
+    const unit = type === "calorias" ? "kcal" : "g";
+    Swal.fire({
+      title: `${config.emoji} ${config.title}`,
+      text: `Você atingiu ${Math.round(current)}${unit} de ${target}${unit} ${
+        type === "calorias" ? "diárias" : `de ${type}`
+      }.`,
+      icon: type === "calorias" ? "warning" : "info",
+      confirmButtonText: "Entendi",
+      confirmButtonColor: config.color,
+    });
+  };
+
+  const checkLimits = () => {
+    if (calorias && totaisAtuais.calorias >= calorias) {
+      showAlert("calorias", totaisAtuais.calorias, calorias);
+    }
+
+    if (metaMacros) {
+      ["proteina", "carbo", "gordura"].forEach((macro) => {
+        if (metaMacros[macro] && totaisAtuais[macro] >= metaMacros[macro]) {
+          showAlert(macro, totaisAtuais[macro], metaMacros[macro]);
+        }
+      });
+    }
+  };
+
+  const getFoodKey = (food) => `${food.nome}_${food.calorias}`;
+
+  useEffect(() => {
+    if (refeicoes.length === 0 && existeDietaSalva()) {
+      const info = getInfoDietaSalva();
+      if (info?.quantidadeRefeicoes > 0) {
+        setDietaInfo(info);
+        setShowRestoreAlert(true);
+      }
     }
   }, [refeicoes.length]);
 
@@ -148,209 +201,68 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
     }
   }, [refeicoes, calorias, metaMacros]);
 
-  const restaurarDietaSalva = () => {
-    const dietaData = carregarDietaLocal();
-    if (dietaData && dietaData.refeicoes) {
-      const sucesso = restaurarRefeicoes(dietaData.refeicoes);
-
-      if (sucesso) {
-        setShowRestoreAlert(false);
-
-        Swal.fire({
-          title: "🍽️ Dieta Restaurada!",
-          text: `${dietaData.refeicoes.length} refeição${
-            dietaData.refeicoes.length !== 1 ? "ões foram" : " foi"
-          } restaurada${
-            dietaData.refeicoes.length !== 1 ? "s" : ""
-          } com sucesso.`,
-          icon: "success",
-          timer: 3000,
-          showConfirmButton: false,
-        });
-      } else {
-        Swal.fire({
-          title: "❌ Erro ao Restaurar",
-          text: "Não foi possível restaurar a dieta. Os dados podem estar corrompidos.",
-          icon: "error",
-          confirmButtonText: "Entendi",
-        });
-      }
-    }
-  };
-
-  const descartarDietaSalva = () => {
-    limparDietaLocal();
-    setShowRestoreAlert(false);
-    setDietaInfo(null);
-  };
-
-  useEffect(() => {
-    if (calorias && totalComRefeicaoAtual.calorias >= calorias * 0.9) {
-      setShowCalorieAlert(true);
-      if (totalComRefeicaoAtual.calorias >= calorias) {
-        Swal.fire({
-          title: "🚨 Limite de Calorias Atingido!",
-          text: `Você atingiu ${Math.round(
-            totalComRefeicaoAtual.calorias
-          )} kcal de ${calorias} kcal diárias.`,
-          icon: "warning",
-          confirmButtonText: "Entendi",
-          confirmButtonColor: "#f44336",
-        });
-      }
-    } else {
-      setShowCalorieAlert(false);
-    }
-
-    if (metaMacros) {
-      const newMacroAlerts = {};
-
-      if (
-        metaMacros.proteina &&
-        totalComRefeicaoAtual.proteina >= metaMacros.proteina * 0.9
-      ) {
-        newMacroAlerts.proteina = true;
-        if (totalComRefeicaoAtual.proteina >= metaMacros.proteina) {
-          Swal.fire({
-            title: "🥩 Limite de Proteínas Atingido!",
-            text: `Você atingiu ${Math.round(
-              totalComRefeicaoAtual.proteina
-            )}g de ${metaMacros.proteina}g de proteínas.`,
-            icon: "info",
-            confirmButtonText: "Entendi",
-            confirmButtonColor: "#2196f3",
-          });
-        }
-      }
-
-      if (
-        metaMacros.carbo &&
-        totalComRefeicaoAtual.carbo >= metaMacros.carbo * 0.9
-      ) {
-        newMacroAlerts.carbo = true;
-        if (totalComRefeicaoAtual.carbo >= metaMacros.carbo) {
-          Swal.fire({
-            title: "🍞 Limite de Carboidratos Atingido!",
-            text: `Você atingiu ${Math.round(
-              totalComRefeicaoAtual.carbo
-            )}g de ${metaMacros.carbo}g de carboidratos.`,
-            icon: "info",
-            confirmButtonText: "Entendi",
-            confirmButtonColor: "#ff9800",
-          });
-        }
-      }
-
-      if (
-        metaMacros.gordura &&
-        totalComRefeicaoAtual.gordura >= metaMacros.gordura * 0.9
-      ) {
-        newMacroAlerts.gordura = true;
-        if (totalComRefeicaoAtual.gordura >= metaMacros.gordura) {
-          Swal.fire({
-            title: "🥑 Limite de Gorduras Atingido!",
-            text: `Você atingiu ${Math.round(
-              totalComRefeicaoAtual.gordura
-            )}g de ${metaMacros.gordura}g de gorduras.`,
-            icon: "info",
-            confirmButtonText: "Entendi",
-            confirmButtonColor: "#4caf50",
-          });
-        }
-      }
-
-      setShowMacroAlerts(newMacroAlerts);
-    }
-  }, [totalComRefeicaoAtual, calorias, metaMacros]);
+  useEffect(checkLimits, [totaisAtuais, calorias, metaMacros]);
 
   const handleEditarRefeicao = (id) => {
-    console.log("Tentando editar refeição:", id);
-
-    const sucesso = editarRefeicaoExistente(id);
-    if (sucesso) {
+    if (editarRefeicaoExistente(id)) {
       setIsEditing(true);
       setOpenDialog(true);
-      setTimeout(() => setOpenDialog(true), 50);
     }
-  };
-
-  const handleToggleMultiSelect = () => {
-    setMultiSelectMode(!multiSelectMode);
-    setSelectedFoods([]);
-    setMultiSelectQuantities({});
   };
 
   const handleFoodMultiSelect = (food) => {
-    const foodKey = `${food.nome}_${food.calorias}`;
-    const isSelected = selectedFoods.find(
-      (f) => `${f.nome}_${f.calorias}` === foodKey
-    );
+    const foodKey = getFoodKey(food);
+    const isSelected = selectedFoods.find((f) => getFoodKey(f) === foodKey);
 
     if (isSelected) {
-      setSelectedFoods(
-        selectedFoods.filter((f) => `${f.nome}_${f.calorias}` !== foodKey)
-      );
+      setSelectedFoods(selectedFoods.filter((f) => getFoodKey(f) !== foodKey));
       const newQuantities = { ...multiSelectQuantities };
       delete newQuantities[foodKey];
       setMultiSelectQuantities(newQuantities);
     } else {
       setSelectedFoods([...selectedFoods, food]);
-      setMultiSelectQuantities({
-        ...multiSelectQuantities,
-        [foodKey]: 100,
-      });
+      setMultiSelectQuantities({ ...multiSelectQuantities, [foodKey]: 100 });
     }
   };
 
   const handleQuantityChange = (foodKey, quantity) => {
-    setMultiSelectQuantities({
-      ...multiSelectQuantities,
-      [foodKey]: quantity,
-    });
+    setMultiSelectQuantities({ ...multiSelectQuantities, [foodKey]: quantity });
   };
 
   const handleAdicionarMultiplos = () => {
     if (selectedFoods.length === 0) {
-      Swal.fire({
+      return Swal.fire({
         title: "Nenhum Alimento Selecionado",
         text: "Selecione pelo menos um alimento antes de adicionar.",
         icon: "warning",
-        confirmButtonText: "Entendi",
       });
-      return;
     }
 
     const alimentosInvalidos = selectedFoods.filter((food) => {
-      const foodKey = `${food.nome}_${food.calorias}`;
-      const quantity = multiSelectQuantities[foodKey];
+      const quantity = multiSelectQuantities[getFoodKey(food)];
       return !quantity || quantity <= 0;
     });
 
     if (alimentosInvalidos.length > 0) {
-      Swal.fire({
+      return Swal.fire({
         title: "Quantidades Inválidas",
         text: `Verifique as quantidades dos seguintes alimentos: ${alimentosInvalidos
           .map((f) => f.nome)
           .join(", ")}`,
         icon: "error",
-        confirmButtonText: "Corrigir",
       });
-      return;
     }
 
     const alimentosParaAdicionar = selectedFoods.map((food) => ({
       food,
-      quantity: multiSelectQuantities[`${food.nome}_${food.calorias}`] || 100,
+      quantity: multiSelectQuantities[getFoodKey(food)] || 100,
+      unit: food.unidade || "gramas", // Adicione esta linha
     }));
 
-    const sucesso = adicionarMultiplosAlimentos(alimentosParaAdicionar);
-
-    if (sucesso) {
+    if (adicionarMultiplosAlimentos(alimentosParaAdicionar)) {
       setSelectedFoods([]);
       setMultiSelectQuantities({});
-      setMultiSelectMode(false);
       setOpenFoodSearch(false);
-
       Swal.fire({
         title: "✅ Alimentos Adicionados!",
         text: `${alimentosParaAdicionar.length} alimento${
@@ -362,22 +274,6 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
         timer: 2000,
         showConfirmButton: false,
       });
-    } else {
-      Swal.fire({
-        title: "Erro ao Adicionar",
-        text: "Ocorreu um erro ao adicionar os alimentos. Tente novamente.",
-        icon: "error",
-        confirmButtonText: "Entendi",
-      });
-    }
-  };
-
-  const handleAdicionarAlimento = () => {
-    const sucesso = adicionarAlimento(selectedFood, foodQuantity);
-    if (sucesso) {
-      setSelectedFood(null);
-      setFoodQuantity(100);
-      setOpenFoodSearch(false);
     }
   };
 
@@ -399,26 +295,21 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
         title: "Erro",
         text: "Adicione um nome e pelo menos um alimento à refeição.",
         icon: "error",
-        confirmButtonText: "Entendi",
       });
     }
   };
 
   const handleGerarPDF = () => {
     if (refeicoes.length === 0) {
-      Swal.fire({
+      return Swal.fire({
         title: "Nenhuma Refeição",
         text: "Adicione pelo menos uma refeição antes de gerar o PDF.",
         icon: "warning",
-        confirmButtonText: "Entendi",
       });
-      return;
     }
 
     setPdfGenerating(true);
-    const totalDia = calcularTotalDia();
-
-    const pdfGenerator = PDFGenerator({
+    PDFGenerator({
       refeicoes,
       totalDia,
       calorias,
@@ -432,17 +323,63 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
           showConfirmButton: false,
         });
       },
-    });
-
-    pdfGenerator.gerarPDFEstilizado();
+    }).gerarPDFEstilizado();
   };
+
+  const restaurarDietaSalva = () => {
+    const dietaData = carregarDietaLocal();
+    if (dietaData?.refeicoes && restaurarRefeicoes(dietaData.refeicoes)) {
+      setShowRestoreAlert(false);
+      const count = dietaData.refeicoes.length;
+      Swal.fire({
+        title: "🍽️ Dieta Restaurada!",
+        text: `${count} refeição${
+          count !== 1 ? "ões foram" : " foi"
+        } restaurada${count !== 1 ? "s" : ""} com sucesso.`,
+        icon: "success",
+        timer: 3000,
+        showConfirmButton: false,
+      });
+    } else {
+      Swal.fire({
+        title: "❌ Erro ao Restaurar",
+        text: "Não foi possível restaurar a dieta. Os dados podem estar corrompidos.",
+        icon: "error",
+      });
+    }
+  };
+
+  const descartarDietaSalva = () => {
+    limparDietaLocal();
+    setShowRestoreAlert(false);
+    setDietaInfo(null);
+  };
+
+  const closeDialog = () => {
+    setOpenDialog(false);
+    setIsEditing(false);
+    setCurrentMeal({ nome: "", alimentos: [] });
+  };
+
+  const handleMealNameSuggestion = (suggestion) => {
+    setCurrentMeal({ ...currentMeal, nome: suggestion });
+  };
+
+  const isNearCalorieLimit =
+    calorias && totaisAtuais.calorias >= calorias * 0.9;
+  const nearMacros = metaMacros
+    ? ["proteina", "carbo", "gordura"].filter(
+        (macro) =>
+          metaMacros[macro] && totaisAtuais[macro] >= metaMacros[macro] * 0.9
+      )
+    : [];
 
   return (
     <Card
       sx={{ boxShadow: "0 8px 32px rgba(0,0,0,0.1)", borderRadius: "10px" }}
     >
       <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
-        {/* Alert para restaurar dieta anterior */}
+        {/* Alert de restauração */}
         {showRestoreAlert && dietaInfo && (
           <Alert
             severity="info"
@@ -457,10 +394,7 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
                 >
                   Restaurar
                 </Button>
-                <IconButton
-                  size="small"
-                  onClick={descartarDietaSalva}
-                >
+                <IconButton size="small" onClick={descartarDietaSalva}>
                   <CloseIcon />
                 </IconButton>
               </Box>
@@ -473,39 +407,28 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
             Deseja restaurá-la?
           </Alert>
         )}
-
-        {/* Alertas de Limites */}
-        {showCalorieAlert && (
+        {/* Alertas de limite */}
+        {isNearCalorieLimit && (
           <Alert severity="warning" sx={{ mb: 2 }}>
             ⚠️ Você está próximo do limite diário de calorias! Atual:{" "}
-            {Math.round(totalComRefeicaoAtual.calorias)} / {calorias} kcal
+            {Math.round(totaisAtuais.calorias)} / {calorias} kcal
           </Alert>
         )}
-
-        {Object.keys(showMacroAlerts).length > 0 && (
+        {nearMacros.length > 0 && (
           <Alert severity="info" sx={{ mb: 2 }}>
             📊 Atenção aos macronutrientes:{" "}
-            {showMacroAlerts.proteina && (
+            {nearMacros.map((macro) => (
               <Chip
-                label="Proteínas próximo do limite"
+                key={macro}
+                label={`${
+                  macro.charAt(0).toUpperCase() + macro.slice(1)
+                } próximo do limite`}
                 size="small"
                 sx={{ mr: 1 }}
               />
-            )}
-            {showMacroAlerts.carbo && (
-              <Chip
-                label="Carboidratos próximo do limite"
-                size="small"
-                sx={{ mr: 1 }}
-              />
-            )}
-            {showMacroAlerts.gordura && (
-              <Chip label="Gorduras próximo do limite" size="small" />
-            )}
+            ))}
           </Alert>
         )}
-
-        {/* Cabeçalho */}
         <DietBuilderHeader
           calorias={calorias}
           refeicoes={refeicoes}
@@ -513,8 +436,6 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
           onGeneratePDF={handleGerarPDF}
           pdfGenerating={pdfGenerating}
         />
-
-        {/* Resumo Nutricional */}
         {refeicoes.length > 0 && (
           <Box sx={{ mb: 3 }}>
             <MacroSummary
@@ -526,8 +447,6 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
             />
           </Box>
         )}
-
-        {/* Lista de Refeições */}
         {refeicoes.length > 0 ? (
           refeicoes.map((refeicao) => (
             <MealCard
@@ -543,17 +462,13 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
         ) : (
           <EmptyMealsState />
         )}
-
         {/* Dialog Nova Refeição */}
         <Dialog
           open={openDialog}
-          onClose={() => setOpenDialog(false)}
+          onClose={closeDialog}
           maxWidth="md"
           fullWidth
-          sx={{
-            px: { xs: 1, sm: 3 },
-            py: { xs: 2, sm: 3 },
-          }}
+          sx={{ px: { xs: 1, sm: 3 }, py: { xs: 2, sm: 3 } }}
         >
           <DialogTitle>
             <Typography variant="h6">Nova Refeição</Typography>
@@ -567,15 +482,49 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
                   setCurrentMeal({ ...currentMeal, nome: e.target.value })
                 }
                 fullWidth
-                sx={{ mb: 3 }}
+                sx={{ mb: 2 }}
                 placeholder="Ex: Café da manhã, Almoço, Jantar..."
-                error={showCalorieAlert}
+                error={isNearCalorieLimit}
                 helperText={
-                  showCalorieAlert
+                  isNearCalorieLimit
                     ? "⚠️ Atenção ao limite de calorias diárias!"
                     : ""
                 }
               />
+
+              {/* Sugestões de nomes de refeição */}
+              <Box sx={{ mb: 3 }}>
+                <Typography
+                  variant="body2"
+                  sx={{ mb: 1, color: "text.secondary" }}
+                >
+                  Sugestões:
+                </Typography>
+                <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                  {mealNameSuggestions.map((suggestion) => (
+                    <Chip
+                      key={suggestion}
+                      label={suggestion}
+                      onClick={() => handleMealNameSuggestion(suggestion)}
+                      variant={
+                        currentMeal.nome === suggestion ? "filled" : "outlined"
+                      }
+                      color={
+                        currentMeal.nome === suggestion ? "primary" : "default"
+                      }
+                      sx={{
+                        cursor: "pointer",
+                        "&:hover": {
+                          backgroundColor:
+                            currentMeal.nome === suggestion
+                              ? "primary.dark"
+                              : "action.hover",
+                        },
+                      }}
+                    />
+                  ))}
+                </Box>
+              </Box>
 
               <Box
                 sx={{
@@ -604,32 +553,19 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
             </Box>
           </DialogContent>
           <DialogActions>
-            <Button
-              onClick={() => {
-                setOpenDialog(false);
-                setIsEditing(false);
-                setCurrentMeal({ nome: "", alimentos: [] });
-              }}
-            >
-              Cancelar
-            </Button>
-
+            <Button onClick={closeDialog}>Cancelar</Button>
             <Button variant="contained" onClick={handleSalvarRefeicao}>
               Salvar Refeição
             </Button>
           </DialogActions>
         </Dialog>
-
         {/* Dialog Busca de Alimentos */}
         <Dialog
           open={openFoodSearch}
           onClose={() => setOpenFoodSearch(false)}
           maxWidth="md"
           fullWidth
-          sx={{
-            px: { xs: 1, sm: 3 },
-            py: { xs: 2, sm: 3 },
-          }}
+          sx={{ px: { xs: 1, sm: 3 }, py: { xs: 2, sm: 3 } }}
         >
           <DialogTitle>
             <Box
@@ -640,22 +576,9 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
               }}
             >
               <Typography variant="h6">Buscar Alimento</Typography>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={multiSelectMode}
-                      onChange={handleToggleMultiSelect}
-                      icon={<CheckBoxIcon />}
-                      checkedIcon={<CheckBoxIcon />}
-                    />
-                  }
-                  label="Seleção Múltipla"
-                />
-                <Button onClick={limparBusca} size="small">
-                  Limpar
-                </Button>
-              </Box>
+              <Button onClick={limparBusca} size="small">
+                Limpar
+              </Button>
             </Box>
           </DialogTitle>
           <DialogContent>
@@ -674,64 +597,27 @@ export default function DietBuilder({ calorias, metaMacros = null }) {
               onCategorySelect={buscarPorCategoriaHandler}
             />
 
-            {multiSelectMode ? (
-              <>
-                <MultiSelectFoodCard
-                  localResults={localResults}
-                  searchResults={searchResults}
-                  loading={loading}
-                  selectedFoods={selectedFoods}
-                  onFoodSelect={handleFoodMultiSelect}
-                />
-
-                {selectedFoods.length > 0 && (
-                  <MultiSelectSummary
-                    selectedFoods={selectedFoods}
-                    quantities={multiSelectQuantities}
-                    onQuantityChange={handleQuantityChange}
-                  />
-                )}
-              </>
-            ) : (
-              <>
-                <FoodSearchResults
-                  localResults={localResults}
-                  searchResults={searchResults}
-                  loading={loading}
-                  selectedFood={selectedFood}
-                  onFoodSelect={setSelectedFood}
-                />
-
-                <FoodQuantitySelector
-                  selectedFood={selectedFood}
-                  foodQuantity={foodQuantity}
-                  onQuantityChange={setFoodQuantity}
-                  onUnitChange={setFoodQuantity}
-                />
-              </>
-            )}
+            <MultiSelectFoodCard
+              localResults={localResults}
+              searchResults={searchResults}
+              loading={loading}
+              selectedFoods={selectedFoods}
+              onFoodSelect={handleFoodMultiSelect}
+              multiSelectQuantities={multiSelectQuantities}
+              onQuantityChange={handleQuantityChange}
+            />
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpenFoodSearch(false)}>Cancelar</Button>
-            {multiSelectMode ? (
-              <Button
-                variant="contained"
-                onClick={handleAdicionarMultiplos}
-                disabled={selectedFoods.length === 0}
-                startIcon={<CheckBoxIcon />}
-              >
-                Adicionar {selectedFoods.length} Alimento
-                {selectedFoods.length !== 1 ? "s" : ""}
-              </Button>
-            ) : (
-              <Button
-                variant="contained"
-                onClick={handleAdicionarAlimento}
-                disabled={!selectedFood}
-              >
-                Adicionar
-              </Button>
-            )}
+            <Button
+              variant="contained"
+              onClick={handleAdicionarMultiplos}
+              disabled={selectedFoods.length === 0}
+              startIcon={<CheckBoxIcon />}
+            >
+              Adicionar {selectedFoods.length} Alimento
+              {selectedFoods.length !== 1 ? "s" : ""}
+            </Button>
           </DialogActions>
         </Dialog>
       </CardContent>

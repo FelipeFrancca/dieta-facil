@@ -1,17 +1,36 @@
 import { useState } from "react";
+import {
+  calcularNutrientes,
+  gerarUnidadesDisponiveis,
+} from "../utils/nutrientCalculator";
 
 export const useMealManagement = () => {
   const [refeicoes, setRefeicoes] = useState([]);
   const [currentMeal, setCurrentMeal] = useState({ nome: "", alimentos: [] });
 
+  // Atualize a função calcularMacrosRefeicao
   const calcularMacrosRefeicao = (alimentos) => {
+    if (!alimentos || alimentos.length === 0) {
+      return { calorias: 0, proteina: 0, carbo: 0, gordura: 0 };
+    }
+
     return alimentos.reduce(
-      (acc, item) => ({
-        calorias: acc.calorias + (item.calorias * item.quantidade) / 100,
-        proteina: acc.proteina + (item.proteina * item.quantidade) / 100,
-        carbo: acc.carbo + (item.carbo * item.quantidade) / 100,
-        gordura: acc.gordura + (item.gordura * item.quantidade) / 100,
-      }),
+      (acc, alimento) => {
+        const unidadesDisponiveis = gerarUnidadesDisponiveis(alimento);
+        const nutrientes = calcularNutrientes(
+          alimento,
+          alimento.quantidade,
+          alimento.unidade || "gramas", // Garante o uso da unidade
+          unidadesDisponiveis
+        );
+
+        return {
+          calorias: acc.calorias + nutrientes.calorias,
+          proteina: acc.proteina + nutrientes.proteina,
+          carbo: acc.carbo + nutrientes.carbo,
+          gordura: acc.gordura + nutrientes.gordura,
+        };
+      },
       { calorias: 0, proteina: 0, carbo: 0, gordura: 0 }
     );
   };
@@ -28,16 +47,14 @@ export const useMealManagement = () => {
     );
   };
 
-  // Função para restaurar refeições do localStorage
   const restaurarRefeicoes = (refeicoesRestauradas) => {
     if (!refeicoesRestauradas || !Array.isArray(refeicoesRestauradas)) {
-      console.error('❌ Dados de refeições inválidos para restauração');
+      console.error("❌ Dados de refeições inválidos para restauração");
       return false;
     }
 
     try {
-      // Validar e limpar os dados antes de restaurar
-      const refeicoesValidas = refeicoesRestauradas.filter(refeicao => {
+      const refeicoesValidas = refeicoesRestauradas.filter((refeicao) => {
         return (
           refeicao &&
           refeicao.nome &&
@@ -48,37 +65,40 @@ export const useMealManagement = () => {
       });
 
       if (refeicoesValidas.length === 0) {
-        console.warn('⚠️ Nenhuma refeição válida encontrada para restaurar');
+        console.warn("⚠️ Nenhuma refeição válida encontrada para restaurar");
         return false;
       }
 
-      // Recalcular macros para garantir consistência
-      const refeicoesComMacrosRecalculados = refeicoesValidas.map(refeicao => ({
-        ...refeicao,
-        macros: calcularMacrosRefeicao(refeicao.alimentos)
-      }));
+      const refeicoesComMacrosRecalculados = refeicoesValidas.map(
+        (refeicao) => ({
+          ...refeicao,
+          macros: calcularMacrosRefeicao(refeicao.alimentos),
+        })
+      );
 
       setRefeicoes(refeicoesComMacrosRecalculados);
-      console.log(`✅ ${refeicoesComMacrosRecalculados.length} refeições restauradas com sucesso`);
+      console.log(
+        `✅ ${refeicoesComMacrosRecalculados.length} refeições restauradas com sucesso`
+      );
       return true;
     } catch (error) {
-      console.error('❌ Erro ao restaurar refeições:', error);
+      console.error("❌ Erro ao restaurar refeições:", error);
       return false;
     }
   };
 
-  // Função para limpar todas as refeições
   const limparTodasRefeicoes = () => {
     setRefeicoes([]);
     setCurrentMeal({ nome: "", alimentos: [] });
   };
 
-  const adicionarAlimento = (selectedFood, quantity) => {
+  const adicionarAlimento = (selectedFood, quantity, unit = "gramas") => {
     if (!selectedFood) return false;
 
     const novoAlimento = {
       ...selectedFood,
       quantidade: quantity,
+      unidade: unit,
       id: Date.now(),
     };
 
@@ -106,6 +126,7 @@ export const useMealManagement = () => {
     const novosAlimentos = alimentosValidos.map((item, index) => ({
       ...item.food,
       quantidade: item.quantity,
+      unidade: item.unit || "gramas",
       id: Date.now() + index,
     }));
 
@@ -240,25 +261,30 @@ export const useMealManagement = () => {
       })
     );
 
+    const macros = calcularMacrosRefeicao(alimentosDuplicados);
     const novaRefeicao = {
       ...refeicaoOriginal,
       id: Date.now(),
       nome: `${refeicaoOriginal.nome} (Cópia)`,
       alimentos: alimentosDuplicados,
+      macros,
     };
 
     setRefeicoes([...refeicoes, novaRefeicao]);
     return true;
   };
 
+  const calcularMacrosRefeicaoAtual = () => {
+    return calcularMacrosRefeicao(currentMeal.alimentos);
+  };
+
   return {
-    // Estado
     refeicoes,
     currentMeal,
     setCurrentMeal,
-    
-    // Funções principais
+
     calcularTotalDia,
+    calcularMacrosRefeicaoAtual,
     adicionarAlimento,
     adicionarMultiplosAlimentos,
     editarRefeicaoExistente,
@@ -271,12 +297,10 @@ export const useMealManagement = () => {
     obterEstatisticasRefeicaoAtual,
     moverRefeicaoParaCima,
     moverRefeicaoParaBaixo,
-    
-    // Novas funções para localStorage
+
     restaurarRefeicoes,
     limparTodasRefeicoes,
-    
-    // Expor setter para casos especiais (compatibilidade)
-    setRefeicoes
+
+    setRefeicoes,
   };
 };
