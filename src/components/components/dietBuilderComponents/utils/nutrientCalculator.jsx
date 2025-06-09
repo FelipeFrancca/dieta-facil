@@ -1,5 +1,3 @@
-// utils/nutrientCalculator.js
-
 /**
  * Calcula os nutrientes de um alimento com base na quantidade e unidade
  * @param {Object} alimento - Objeto do alimento com dados nutricionais
@@ -26,12 +24,10 @@ export const calcularNutrientes = (
 
   let gramas = quantidade;
 
-  // Se não for gramas, converter para gramas usando as unidades disponíveis
   if (unidade !== "gramas") {
     gramas = converterParaGramas(quantidade, unidade, unidadesDisponiveis);
   }
 
-  // Calcular nutrientes baseado em gramas (valores do alimento são por 100g)
   const fator = gramas / 100;
 
   return {
@@ -51,7 +47,6 @@ export const calcularNutrientes = (
 export const calcularTotalNutrientes = (alimentos) => {
   return alimentos.reduce(
     (total, alimento) => {
-      // Gerar unidades disponíveis para cada alimento
       const unidadesDisponiveis = gerarUnidadesDisponiveis(alimento);
 
       const nutrientes = calcularNutrientes(
@@ -120,7 +115,6 @@ export const calcularNutrientesDia = (refeicoes) => {
 export const gerarUnidadesDisponiveis = (alimento) => {
   if (!alimento) return [];
 
-  // Sempre incluir gramas como opção
   const units = [
     {
       tipo: "gramas",
@@ -130,7 +124,6 @@ export const gerarUnidadesDisponiveis = (alimento) => {
     },
   ];
 
-  // Adicionar unidades específicas se disponíveis
   if (alimento.unidades && alimento.unidades.length > 0) {
     alimento.unidades.forEach((unidade, index) => {
       units.push({
@@ -155,7 +148,7 @@ export const gerarUnidadesDisponiveis = (alimento) => {
  * @param {Array} unidadesDisponiveis - Array com as unidades disponíveis
  * @returns {number} Quantidade convertida para gramas
  */
-// Atualize converterParaGramas
+
 export const converterParaGramas = (
   quantidade,
   unidade = "gramas",
@@ -167,7 +160,6 @@ export const converterParaGramas = (
     (u) => u.tipo === unidade
   );
 
-  // Se não encontrar, usa relação padrão 1:1
   return unidadeSelecionada
     ? quantidade * (unidadeSelecionada.pesoPorUnidade || 1)
     : quantidade;

@@ -8,7 +8,7 @@ export const useMealManagement = () => {
   const [refeicoes, setRefeicoes] = useState([]);
   const [currentMeal, setCurrentMeal] = useState({ nome: "", alimentos: [] });
 
-  // Atualize a função calcularMacrosRefeicao
+  // Função para calcular macros de uma refeição
   const calcularMacrosRefeicao = (alimentos) => {
     if (!alimentos || alimentos.length === 0) {
       return { calorias: 0, proteina: 0, carbo: 0, gordura: 0 };
@@ -20,7 +20,7 @@ export const useMealManagement = () => {
         const nutrientes = calcularNutrientes(
           alimento,
           alimento.quantidade,
-          alimento.unidade || "gramas", // Garante o uso da unidade
+          alimento.unidade || "gramas",
           unidadesDisponiveis
         );
 
@@ -37,12 +37,16 @@ export const useMealManagement = () => {
 
   const calcularTotalDia = () => {
     return refeicoes.reduce(
-      (acc, refeicao) => ({
-        calorias: acc.calorias + refeicao.macros.calorias,
-        proteina: acc.proteina + refeicao.macros.proteina,
-        carbo: acc.carbo + refeicao.macros.carbo,
-        gordura: acc.gordura + refeicao.macros.gordura,
-      }),
+      (acc, refeicao) => {
+        // Recalcular os macros da refeição para garantir precisão
+        const macrosRefeicao = calcularMacrosRefeicao(refeicao.alimentos);
+        return {
+          calorias: acc.calorias + macrosRefeicao.calorias,
+          proteina: acc.proteina + macrosRefeicao.proteina,
+          carbo: acc.carbo + macrosRefeicao.carbo,
+          gordura: acc.gordura + macrosRefeicao.gordura,
+        };
+      },
       { calorias: 0, proteina: 0, carbo: 0, gordura: 0 }
     );
   };
@@ -59,8 +63,7 @@ export const useMealManagement = () => {
           refeicao &&
           refeicao.nome &&
           refeicao.alimentos &&
-          Array.isArray(refeicao.alimentos) &&
-          refeicao.macros
+          Array.isArray(refeicao.alimentos)
         );
       });
 
@@ -92,15 +95,43 @@ export const useMealManagement = () => {
     setCurrentMeal({ nome: "", alimentos: [] });
   };
 
+  // FUNÇÃO CORRIGIDA - Agora preserva os dados nutricionais originais
   const adicionarAlimento = (selectedFood, quantity, unit = "gramas") => {
-    if (!selectedFood) return false;
+    if (!selectedFood || !quantity || quantity <= 0) return false;
 
+    // Criar o alimento preservando TODOS os dados nutricionais originais
     const novoAlimento = {
-      ...selectedFood,
+      // Preservar todos os dados nutricionais originais (por 100g)
+      id: Date.now(),
+      nome: selectedFood.nome,
+      calorias: selectedFood.calorias, // Manter valor original por 100g
+      proteina: selectedFood.proteina, // Manter valor original por 100g
+      carbo: selectedFood.carbo, // Manter valor original por 100g
+      gordura: selectedFood.gordura, // Manter valor original por 100g
+
+      // Preservar unidades disponíveis se existirem
+      unidades: selectedFood.unidades || [],
+
+      // Salvar quantidade e unidade selecionadas
       quantidade: quantity,
       unidade: unit,
-      id: Date.now(),
+
+      // Preservar outros dados se existirem
+      ...(selectedFood.categoria && { categoria: selectedFood.categoria }),
+      ...(selectedFood.grupo && { grupo: selectedFood.grupo }),
     };
+
+    console.log("➕ Adicionando alimento:", {
+      nome: novoAlimento.nome,
+      quantidade: novoAlimento.quantidade,
+      unidade: novoAlimento.unidade,
+      valoresOriginais: {
+        calorias: novoAlimento.calorias,
+        proteina: novoAlimento.proteina,
+        carbo: novoAlimento.carbo,
+        gordura: novoAlimento.gordura,
+      },
+    });
 
     setCurrentMeal({
       ...currentMeal,
@@ -124,10 +155,18 @@ export const useMealManagement = () => {
     }
 
     const novosAlimentos = alimentosValidos.map((item, index) => ({
-      ...item.food,
+      // Preservar todos os dados nutricionais originais
+      id: Date.now() + index,
+      nome: item.food.nome,
+      calorias: item.food.calorias,
+      proteina: item.food.proteina,
+      carbo: item.food.carbo,
+      gordura: item.food.gordura,
+      unidades: item.food.unidades || [],
       quantidade: item.quantity,
       unidade: item.unit || "gramas",
-      id: Date.now() + index,
+      ...(item.food.categoria && { categoria: item.food.categoria }),
+      ...(item.food.grupo && { grupo: item.food.grupo }),
     }));
 
     setCurrentMeal({
@@ -231,6 +270,23 @@ export const useMealManagement = () => {
       id: Date.now(),
     };
 
+    console.log("💾 Salvando refeição:", {
+      nome: novaRefeicao.nome,
+      totalAlimentos: novaRefeicao.alimentos.length,
+      macrosCalculados: macros,
+      alimentos: novaRefeicao.alimentos.map((a) => ({
+        nome: a.nome,
+        quantidade: a.quantidade,
+        unidade: a.unidade,
+        valoresOriginais: {
+          calorias: a.calorias,
+          proteina: a.proteina,
+          carbo: a.carbo,
+          gordura: a.gordura,
+        },
+      })),
+    });
+
     setRefeicoes([...refeicoes, novaRefeicao]);
     setCurrentMeal({ nome: "", alimentos: [] });
     return true;
@@ -282,7 +338,6 @@ export const useMealManagement = () => {
     refeicoes,
     currentMeal,
     setCurrentMeal,
-
     calcularTotalDia,
     calcularMacrosRefeicaoAtual,
     adicionarAlimento,
@@ -297,10 +352,8 @@ export const useMealManagement = () => {
     obterEstatisticasRefeicaoAtual,
     moverRefeicaoParaCima,
     moverRefeicaoParaBaixo,
-
     restaurarRefeicoes,
     limparTodasRefeicoes,
-
     setRefeicoes,
   };
 };
