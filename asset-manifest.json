@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/dieta-facil/static/css/main.e6c13ad2.css",
-    "main.js": "/dieta-facil/static/js/main.e1bd50d3.js",
+    "main.js": "/dieta-facil/static/js/main.d671cd15.js",
     "static/js/239.85d99974.chunk.js": "/dieta-facil/static/js/239.85d99974.chunk.js",
     "static/js/977.02f24742.chunk.js": "/dieta-facil/static/js/977.02f24742.chunk.js",
     "static/js/455.09d3091d.chunk.js": "/dieta-facil/static/js/455.09d3091d.chunk.js",
     "static/js/453.02b7f139.chunk.js": "/dieta-facil/static/js/453.02b7f139.chunk.js",
     "index.html": "/dieta-facil/index.html",
     "main.e6c13ad2.css.map": "/dieta-facil/static/css/main.e6c13ad2.css.map",
-    "main.e1bd50d3.js.map": "/dieta-facil/static/js/main.e1bd50d3.js.map",
+    "main.d671cd15.js.map": "/dieta-facil/static/js/main.d671cd15.js.map",
     "239.85d99974.chunk.js.map": "/dieta-facil/static/js/239.85d99974.chunk.js.map",
     "977.02f24742.chunk.js.map": "/dieta-facil/static/js/977.02f24742.chunk.js.map",
     "455.09d3091d.chunk.js.map": "/dieta-facil/static/js/455.09d3091d.chunk.js.map",
@@ -16,6 +16,6 @@
   },
   "entrypoints": [
     "static/css/main.e6c13ad2.css",
-    "static/js/main.e1bd50d3.js"
+    "static/js/main.d671cd15.js"
   ]
 }
