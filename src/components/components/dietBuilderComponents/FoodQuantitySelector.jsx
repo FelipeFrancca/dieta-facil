@@ -40,12 +40,36 @@ export const FoodQuantitySelector = ({
     // Use a primeira unidade como padrão se não houver inicial
     const defaultUnit = units[0]?.tipo || "gramas";
     setSelectedUnit(initialUnit || defaultUnit);
-    onUnitChange(initialUnit || defaultUnit);
-  }, [selectedFood]);
+    onUnitChange && onUnitChange(initialUnit || defaultUnit);
+  }, [selectedFood, initialUnit]);
+
+  useEffect(() => {
+    if (selectedFood && foodQuantity > 0) {
+      const nutrients = calcularNutrientes(
+        selectedFood,
+        foodQuantity,
+        selectedUnit,
+        availableUnits
+      );
+      setNutrientInfo(nutrients);
+    } else {
+      setNutrientInfo(null);
+    }
+  }, [selectedFood, foodQuantity, selectedUnit, availableUnits]);
 
   const handleUnitChange = (unit) => {
     setSelectedUnit(unit);
-    onUnitChange(unit);
+    onUnitChange && onUnitChange(unit);
+  };
+
+  const getUnitDisplayInfo = (unitType) => {
+    const unit = availableUnits.find(u => u.tipo === unitType);
+    if (!unit) return { label: unitType, description: "" };
+
+    return {
+      label: unit.label || unit.descricao || unitType,
+      description: unit.descricao ? `(${unit.pesoPorUnidade}g)` : ""
+    };
   };
 
   useEffect(() => {
@@ -87,9 +111,9 @@ export const FoodQuantitySelector = ({
               <MenuItem key={unit.tipo} value={unit.tipo}>
                 <Box>
                   <Typography variant="body2" sx={{ fontWeight: "medium" }}>
-                    {unit.label}
+                    {getUnitDisplayInfo(unit.tipo).label}
                   </Typography>
-                  {unit.tipo !== "gramas" && (
+                  {unit.tipo !== "gramas" && unit.pesoPorUnidade && (
                     <Typography variant="caption" color="textSecondary">
                       ≈ {unit.pesoPorUnidade}g cada
                     </Typography>
@@ -112,13 +136,21 @@ export const FoodQuantitySelector = ({
             step: isGramas ? 1 : 0.1,
             max: 9999,
           }}
+          helperText={
+            nutrientInfo 
+              ? `≈ ${nutrientInfo.gramas}g | ${Math.round(nutrientInfo.calorias)} kcal`
+              : ""
+          }
         />
       </Box>
 
       {/* Informação sobre a unidade selecionada */}
       {!isGramas && currentUnitData && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          <Typography variant="body2">{currentUnitData.descricao}</Typography>
+          <Typography variant="body2">
+            {currentUnitData.descricao || 
+             `Cada ${getUnitDisplayInfo(selectedUnit).label} tem aproximadamente ${currentUnitData.pesoPorUnidade}g`}
+          </Typography>
         </Alert>
       )}
 

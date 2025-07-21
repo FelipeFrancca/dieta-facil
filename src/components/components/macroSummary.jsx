@@ -18,6 +18,7 @@ const MacroSummary = ({
   compacto = false,
   mostrarPercentuais = true,
   metaMacros = null,
+  responsive = true,
 }) => {
   // Garantir que os valores são números válidos
   const caloriasSafe = Math.max(0, totalDia?.calorias || 0);
@@ -46,6 +47,12 @@ const MacroSummary = ({
   const formatarValor = (valor) => {
     if (valor === 0) return 0;
     return valor >= 10 ? Math.round(valor) : Math.round(valor * 10) / 10;
+  };
+
+  const obterCorProgresso = (percentual) => {
+    if (percentual >= 100) return "success";
+    if (percentual >= 80) return "warning";
+    return "primary";
   };
 
   const macroData = [
@@ -201,24 +208,45 @@ const MacroSummary = ({
         )}
       </Box>
 
-      <Grid container spacing={3}>
+      <Grid container spacing={responsive ? { xs: 1, sm: 2, md: 3 } : 3}>
         {macroData.map((macro, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
+          <Grid item xs={6} sm={6} md={3} key={index}>
             <Box>
-              <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                <Typography variant="h4" sx={{ mr: 1 }}>
+              <Box sx={{ 
+                display: "flex", 
+                alignItems: "center", 
+                mb: 1,
+                flexDirection: responsive ? { xs: "column", sm: "row" } : "row",
+                textAlign: responsive ? { xs: "center", sm: "left" } : "left"
+              }}>
+                <Typography variant={responsive ? { xs: "h5", sm: "h4" } : "h4"} sx={{ mr: { xs: 0, sm: 1 } }}>
                   {macro.icon}
                 </Typography>
                 <Box sx={{ flex: 1 }}>
-                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      opacity: 0.9,
+                      fontSize: responsive ? { xs: "0.7rem", sm: "0.875rem" } : "0.875rem"
+                    }}
+                  >
                     {macro.nome}
                   </Typography>
-                  <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+                  <Typography 
+                    variant={responsive ? { xs: "h6", sm: "h5" } : "h5"} 
+                    sx={{ 
+                      fontWeight: "bold",
+                      fontSize: responsive ? { xs: "1rem", sm: "1.5rem" } : "1.5rem"
+                    }}
+                  >
                     {macro.valor}
                     <Typography
                       component="span"
                       variant="body2"
-                      sx={{ ml: 0.5 }}
+                      sx={{ 
+                        ml: 0.5,
+                        fontSize: responsive ? { xs: "0.7rem", sm: "0.875rem" } : "0.875rem"
+                      }}
                     >
                       {macro.unidade}
                     </Typography>
@@ -233,18 +261,26 @@ const MacroSummary = ({
                     variant="determinate"
                     value={Math.min(macro.percentualMeta, 100)}
                     sx={{
-                      height: 6,
+                      height: responsive ? { xs: 4, sm: 6 } : 6,
                       borderRadius: 3,
                       bgcolor: "rgba(255,255,255,0.2)",
                       "& .MuiLinearProgress-bar": {
                         bgcolor: macro.percentualMeta > 100 
-                          ? "rgba(255,193,7,0.9)" // Amarelo para excesso
+                          ? "rgba(255,193,7,0.9)" 
                           : "rgba(255,255,255,0.8)",
                         borderRadius: 3,
                       },
                     }}
                   />
-                  <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      opacity: 0.8,
+                      fontSize: responsive ? { xs: "0.6rem", sm: "0.75rem" } : "0.75rem",
+                      display: "block",
+                      mt: 0.5
+                    }}
+                  >
                     {macro.percentualMeta}% da meta ({macro.meta}
                     {macro.unidade})
                     {macro.percentualMeta > 100 && " - Excedido!"}
@@ -254,14 +290,26 @@ const MacroSummary = ({
 
               {/* Percentual dos macros */}
               {mostrarPercentuais && macro.nome !== "Calorias" && macro.percentualTotal > 0 && (
-                <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    opacity: 0.8,
+                    fontSize: responsive ? { xs: "0.6rem", sm: "0.75rem" } : "0.75rem"
+                  }}
+                >
                   {macro.percentualTotal}% do total calórico
                 </Typography>
               )}
 
               {/* Meta das calorias quando não há barra de progresso */}
               {macro.nome === "Calorias" && calorias && !mostrarProgresso && (
-                <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    opacity: 0.8,
+                    fontSize: responsive ? { xs: "0.6rem", sm: "0.75rem" } : "0.75rem"
+                  }}
+                >
                   Meta: {calorias} kcal
                 </Typography>
               )}

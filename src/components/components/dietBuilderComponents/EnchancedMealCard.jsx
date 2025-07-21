@@ -30,6 +30,10 @@ import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import { useState } from "react";
+import { 
+  calcularNutrientes, 
+  gerarUnidadesDisponiveis 
+} from "./utils/nutrientCalculator";
 
 export const EnhancedMealCard = ({
   refeicao,
@@ -43,6 +47,36 @@ export const EnhancedMealCard = ({
 }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+
+  // Recalcular os macros para garantir que estão corretos COM as unidades
+  const recalcularMacrosRefeicao = (alimentos) => {
+    if (!alimentos || alimentos.length === 0) {
+      return { calorias: 0, proteina: 0, carbo: 0, gordura: 0 };
+    }
+
+    return alimentos.reduce(
+      (acc, alimento) => {
+        const unidadesDisponiveis = gerarUnidadesDisponiveis(alimento);
+        const nutrientes = calcularNutrientes(
+          alimento,
+          alimento.quantidade,
+          alimento.unidade || "gramas",
+          unidadesDisponiveis
+        );
+
+        return {
+          calorias: acc.calorias + nutrientes.calorias,
+          proteina: acc.proteina + nutrientes.proteina,
+          carbo: acc.carbo + nutrientes.carbo,
+          gordura: acc.gordura + nutrientes.gordura,
+        };
+      },
+      { calorias: 0, proteina: 0, carbo: 0, gordura: 0 }
+    );
+  };
+
+  // Usar macros recalculados ao invés dos salvos (que podem estar desatualizados)
+  const macrosCorretos = recalcularMacrosRefeicao(refeicao.alimentos);
 
   const handleMenuClick = (event) => {
     event.stopPropagation();
@@ -265,7 +299,7 @@ export const EnhancedMealCard = ({
             </Box>
           </Box>
           <Chip
-            label={`${Math.round(refeicao.macros.calorias)} kcal`}
+            label={`${Math.round(macrosCorretos.calorias)} kcal`}
             sx={{ 
               backgroundColor: 'rgba(255,255,255,0.25)', 
               color: 'white',
@@ -307,7 +341,7 @@ export const EnhancedMealCard = ({
                   💪 Proteínas
                 </Typography>
                 <Typography variant="h4" sx={{ fontWeight: "800" }}>
-                  {Math.round(refeicao.macros.proteina)}g
+                  {Math.round(macrosCorretos.proteina)}g
                 </Typography>
               </CardContent>
             </Card>
@@ -328,7 +362,7 @@ export const EnhancedMealCard = ({
                   ⚡ Carboidratos
                 </Typography>
                 <Typography variant="h4" sx={{ fontWeight: "800" }}>
-                  {Math.round(refeicao.macros.carbo)}g
+                  {Math.round(macrosCorretos.carbo)}g
                 </Typography>
               </CardContent>
             </Card>
@@ -347,7 +381,7 @@ export const EnhancedMealCard = ({
                   🥑 Gorduras
                 </Typography>
                 <Typography variant="h4" sx={{ fontWeight: "800" }}>
-                  {Math.round(refeicao.macros.gordura)}g
+                  {Math.round(macrosCorretos.gordura)}g
                 </Typography>
               </CardContent>
             </Card>

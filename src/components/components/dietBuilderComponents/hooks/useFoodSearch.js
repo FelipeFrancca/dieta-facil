@@ -473,14 +473,53 @@ export const useFoodSearch = () => {
     return alimentosProcessados;
   };
 
+  // Função de busca local aprimorada
+  const buscarAlimentosComFiltro = (termo) => {
+    const termoLower = termo.toLowerCase().trim();
+    const palavras = termoLower.split(' ').filter(p => p.length > 0);
+    
+    return buscarAlimentos(termoLower).filter(alimento => {
+      const nomeAlimento = alimento.nome.toLowerCase();
+      
+      // Busca exata tem prioridade
+      if (nomeAlimento.includes(termoLower)) {
+        return true;
+      }
+      
+      // Busca por palavras individuais
+      if (palavras.length > 1) {
+        return palavras.every(palavra => nomeAlimento.includes(palavra));
+      }
+      
+      // Busca por início das palavras
+      const palavrasAlimento = nomeAlimento.split(' ');
+      return palavrasAlimento.some(palavra => palavra.startsWith(termoLower));
+    }).sort((a, b) => {
+      const nomeA = a.nome.toLowerCase();
+      const nomeB = b.nome.toLowerCase();
+      
+      // Priorizar correspondências exatas
+      if (nomeA.includes(termoLower) && !nomeB.includes(termoLower)) return -1;
+      if (!nomeA.includes(termoLower) && nomeB.includes(termoLower)) return 1;
+      
+      // Priorizar correspondências que começam com o termo
+      if (nomeA.startsWith(termoLower) && !nomeB.startsWith(termoLower)) return -1;
+      if (!nomeA.startsWith(termoLower) && nomeB.startsWith(termoLower)) return 1;
+      
+      // Ordem alfabética
+      return nomeA.localeCompare(nomeB);
+    });
+  };
+
   useEffect(() => {
     const buscar = async () => {
       if (searchTerm.length > 2) {
-        // 1. Buscar local imediatamente
-        const locaisBase = buscarAlimentos(searchTerm);
+        setLoading(true);
+        
+        // 1. Buscar local imediatamente com filtro aprimorado
+        const locaisBase = buscarAlimentosComFiltro(searchTerm);
         const locaisProcessados = processarResultadosLocais(locaisBase);
         setLocalResults(locaisProcessados);
-        setLoading(true);
 
         // 2. Buscar na API em paralelo
         try {

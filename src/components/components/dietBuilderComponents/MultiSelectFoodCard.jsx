@@ -5,13 +5,15 @@ import { FoodCard } from './FoodCard';
 import { FoodQuantitySelector } from './FoodQuantitySelector';
 
 export const MultiSelectFoodCard = ({
-  localResults,
-  searchResults,
-  loading,
-  selectedFoods,
+  localResults = [],
+  searchResults = [],
+  loading = false,
+  selectedFoods = [],
   onFoodSelect,
-  multiSelectQuantities,
-  onQuantityChange
+  multiSelectQuantities = {},
+  multiSelectUnits = {},
+  onQuantityChange,
+  onUnitChange
 }) => {
   const getFoodKey = (food) => `${food.nome}_${food.calorias}`;
   
@@ -39,7 +41,8 @@ export const MultiSelectFoodCard = ({
               selectedFood={food}
               foodQuantity={multiSelectQuantities[foodKey] || 100}
               onQuantityChange={(value) => onQuantityChange(foodKey, value)}
-              onUnitChange={() => {}}
+              onUnitChange={(unit) => onUnitChange && onUnitChange(foodKey, unit)}
+              initialUnit={multiSelectUnits[foodKey] || "gramas"}
             />
           </Box>
         )}
@@ -56,9 +59,12 @@ export const MultiSelectFoodCard = ({
   }
 
   // Combinar resultados locais e da API, removendo duplicatas
-  const allResults = [...localResults];
-  searchResults.forEach(apiFood => {
-    const exists = localResults.some(localFood => 
+  const safeLocalResults = Array.isArray(localResults) ? localResults : [];
+  const safeSearchResults = Array.isArray(searchResults) ? searchResults : [];
+  
+  const allResults = [...safeLocalResults];
+  safeSearchResults.forEach(apiFood => {
+    const exists = safeLocalResults.some(localFood => 
       localFood.nome.toLowerCase() === apiFood.nome.toLowerCase()
     );
     if (!exists) {

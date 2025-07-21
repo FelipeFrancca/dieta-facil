@@ -6,7 +6,9 @@ import {
   converterParaGramas,
 } from "./utils/nutrientCalculator";
 
-export const CurrentMealFoods = ({ alimentos, onRemoveFood }) => {
+export const CurrentMealFoods = ({ alimentos, onRemoverAlimento, onRemoveFood }) => {
+  // Usar onRemoverAlimento se fornecido, caso contrário usar onRemoveFood para compatibilidade
+  const removeHandler = onRemoverAlimento || onRemoveFood;
   if (alimentos.length === 0) {
     return (
       <Box sx={{ textAlign: "center", py: 4 }}>
@@ -149,7 +151,7 @@ export const CurrentMealFoods = ({ alimentos, onRemoveFood }) => {
 
               <IconButton
                 color="error"
-                onClick={() => onRemoveFood(alimento.id)}
+                onClick={() => removeHandler(alimento.id)}
                 sx={{
                   backgroundColor: "#ffebee",
                   "&:hover": {

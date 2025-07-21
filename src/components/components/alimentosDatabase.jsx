@@ -1,30 +1,131 @@
 export const alimentosDatabase = {
   // === CEREAIS E GRÃOS ===
-  "arroz integral": { calorias: 123, proteina: 2.6, carbo: 23, gordura: 0.9 },
-  "arroz branco": { calorias: 130, proteina: 2.7, carbo: 28, gordura: 0.3 },
-  "arroz integral cozido": { calorias: 124, proteina: 2.6, carbo: 25, gordura: 1.0 },
-  "arroz branco cozido": { calorias: 128, proteina: 2.4, carbo: 26, gordura: 0.2 },
+  "arroz integral": { 
+    calorias: 123, proteina: 2.6, carbo: 23, gordura: 0.9,
+    unidades: [
+      { tipo: "colher_sopa", descricao: "Colher de sopa", pesoPorUnidade: 15 },
+      { tipo: "xicara", descricao: "Xícara", pesoPorUnidade: 160 },
+      { tipo: "escumadeira", descricao: "Escumadeira", pesoPorUnidade: 45 }
+    ]
+  },
+  "arroz branco": { 
+    calorias: 130, proteina: 2.7, carbo: 28, gordura: 0.3,
+    unidades: [
+      { tipo: "colher_sopa", descricao: "Colher de sopa", pesoPorUnidade: 15 },
+      { tipo: "xicara", descricao: "Xícara", pesoPorUnidade: 160 },
+      { tipo: "escumadeira", descricao: "Escumadeira", pesoPorUnidade: 45 }
+    ]
+  },
+  "arroz integral cozido": { 
+    calorias: 124, proteina: 2.6, carbo: 25, gordura: 1.0,
+    unidades: [
+      { tipo: "colher_sopa", descricao: "Colher de sopa", pesoPorUnidade: 20 },
+      { tipo: "concha", descricao: "Concha média", pesoPorUnidade: 80 },
+      { tipo: "escumadeira", descricao: "Escumadeira", pesoPorUnidade: 60 }
+    ]
+  },
+  "arroz branco cozido": { 
+    calorias: 128, proteina: 2.4, carbo: 26, gordura: 0.2,
+    unidades: [
+      { tipo: "colher_sopa", descricao: "Colher de sopa", pesoPorUnidade: 20 },
+      { tipo: "concha", descricao: "Concha média", pesoPorUnidade: 80 },
+      { tipo: "escumadeira", descricao: "Escumadeira", pesoPorUnidade: 60 }
+    ]
+  },
   "arroz parboilizado": { calorias: 348, proteina: 7.4, carbo: 78, gordura: 1.0 },
-  "aveia": { calorias: 389, proteina: 17, carbo: 66, gordura: 7 },
-  "aveia em flocos": { calorias: 394, proteina: 13.9, carbo: 60.8, gordura: 8.5 },
-  "quinoa": { calorias: 368, proteina: 14, carbo: 64, gordura: 6 },
-  "quinoa cozida": { calorias: 120, proteina: 4.4, carbo: 22, gordura: 1.9 },
+  "aveia": { 
+    calorias: 389, proteina: 17, carbo: 66, gordura: 7,
+    unidades: [
+      { tipo: "colher_sopa", descricao: "Colher de sopa", pesoPorUnidade: 10 },
+      { tipo: "colher_cha", descricao: "Colher de chá", pesoPorUnidade: 3 },
+      { tipo: "xicara", descricao: "Xícara", pesoPorUnidade: 80 }
+    ]
+  },
+  "aveia em flocos": { 
+    calorias: 394, proteina: 13.9, carbo: 60.8, gordura: 8.5,
+    unidades: [
+      { tipo: "colher_sopa", descricao: "Colher de sopa", pesoPorUnidade: 8 },
+      { tipo: "xicara", descricao: "Xícara", pesoPorUnidade: 80 }
+    ]
+  },
+  "quinoa": { 
+    calorias: 368, proteina: 14, carbo: 64, gordura: 6,
+    unidades: [
+      { tipo: "colher_sopa", descricao: "Colher de sopa", pesoPorUnidade: 12 },
+      { tipo: "xicara", descricao: "Xícara", pesoPorUnidade: 180 }
+    ]
+  },
+  "quinoa cozida": { 
+    calorias: 120, proteina: 4.4, carbo: 22, gordura: 1.9,
+    unidades: [
+      { tipo: "colher_sopa", descricao: "Colher de sopa", pesoPorUnidade: 18 },
+      { tipo: "concha", descricao: "Concha média", pesoPorUnidade: 90 }
+    ]
+  },
   "cuscuz de milho": { calorias: 112, proteina: 3.5, carbo: 23, gordura: 0.2 },
   "cuscuz cru": { calorias: 358, proteina: 11.2, carbo: 77, gordura: 0.8 },
-  "farinha de trigo": { calorias: 364, proteina: 10.3, carbo: 75, gordura: 0.9 },
-  "farinha de mandioca": { calorias: 365, proteina: 1.8, carbo: 85, gordura: 0.8 },
+  "farinha de trigo": { 
+    calorias: 364, proteina: 10.3, carbo: 75, gordura: 0.9,
+    unidades: [
+      { tipo: "colher_sopa", descricao: "Colher de sopa", pesoPorUnidade: 10 },
+      { tipo: "xicara", descricao: "Xícara", pesoPorUnidade: 120 }
+    ]
+  },
+  "farinha de mandioca": { 
+    calorias: 365, proteina: 1.8, carbo: 85, gordura: 0.8,
+    unidades: [
+      { tipo: "colher_sopa", descricao: "Colher de sopa", pesoPorUnidade: 12 },
+      { tipo: "xicara", descricao: "Xícara", pesoPorUnidade: 150 }
+    ]
+  },
   "farinha de milho": { calorias: 365, proteina: 7.3, carbo: 79, gordura: 2.8 },
   "polenta": { calorias: 70, proteina: 1.6, carbo: 16, gordura: 0.2 },
   "tapioca": { calorias: 98, proteina: 0.2, carbo: 25, gordura: 0.0 },
 
   // === LEGUMINOSAS ===
-  "feijão preto": { calorias: 132, proteina: 8.9, carbo: 24, gordura: 0.5 },
-  "feijão carioca": { calorias: 137, proteina: 8.5, carbo: 25, gordura: 0.6 },
-  "feijão preto cozido": { calorias: 77, proteina: 4.5, carbo: 14, gordura: 0.5 },
-  "feijão carioca cozido": { calorias: 76, proteina: 4.8, carbo: 13.6, gordura: 0.5 },
+  "feijão preto": { 
+    calorias: 132, proteina: 8.9, carbo: 24, gordura: 0.5,
+    unidades: [
+      { tipo: "xicara", descricao: "Xícara", pesoPorUnidade: 190 },
+      { tipo: "colher_sopa", descricao: "Colher de sopa", pesoPorUnidade: 15 }
+    ]
+  },
+  "feijão carioca": { 
+    calorias: 137, proteina: 8.5, carbo: 25, gordura: 0.6,
+    unidades: [
+      { tipo: "xicara", descricao: "Xícara", pesoPorUnidade: 190 },
+      { tipo: "colher_sopa", descricao: "Colher de sopa", pesoPorUnidade: 15 }
+    ]
+  },
+  "feijão preto cozido": { 
+    calorias: 77, proteina: 4.5, carbo: 14, gordura: 0.5,
+    unidades: [
+      { tipo: "concha", descricao: "Concha média", pesoPorUnidade: 100 },
+      { tipo: "colher_sopa", descricao: "Colher de sopa", pesoPorUnidade: 20 }
+    ]
+  },
+  "feijão carioca cozido": { 
+    calorias: 76, proteina: 4.8, carbo: 13.6, gordura: 0.5,
+    unidades: [
+      { tipo: "concha", descricao: "Concha média", pesoPorUnidade: 100 },
+      { tipo: "colher_sopa", descricao: "Colher de sopa", pesoPorUnidade: 20 }
+    ]
+  },
   "feijão branco": { calorias: 123, proteina: 8.2, carbo: 21, gordura: 0.9 },
-  "lentilha": { calorias: 116, proteina: 9, carbo: 20, gordura: 0.4 },
-  "lentilha cozida": { calorias: 93, proteina: 6.8, carbo: 16, gordura: 0.4 },
+  "lentilha": { 
+    calorias: 116, proteina: 9, carbo: 20, gordura: 0.4,
+    unidades: [
+      { tipo: "xicara", descricao: "Xícara", pesoPorUnidade: 200 },
+      { tipo: "colher_sopa", descricao: "Colher de sopa", pesoPorUnidade: 15 }
+    ]
+  },
+  "lentilha cozida": { 
+    calorias: 93, proteina: 6.8, carbo: 16, gordura: 0.4,
+    unidades: [
+      { tipo: "concha", descricao: "Concha média", pesoPorUnidade: 110 },
+      { tipo: "colher_sopa", descricao: "Colher de sopa", pesoPorUnidade: 18 }
+    ]
+  },
   "grão de bico": { calorias: 164, proteina: 8.9, carbo: 27, gordura: 2.6 },
   "grão de bico cozido": { calorias: 121, proteina: 6.3, carbo: 19.3, gordura: 2.1 },
   "ervilha": { calorias: 81, proteina: 5.4, carbo: 14, gordura: 0.4 },
@@ -84,12 +185,45 @@ export const alimentosDatabase = {
   "presunto": { calorias: 162, proteina: 19.8, carbo: 0.8, gordura: 8.4 },
 
   // === OVOS (DIFERENTES PREPAROS) ===
-  "ovo cozido": { calorias: 155, proteina: 13, carbo: 1.1, gordura: 11 },
-  "ovo cru": { calorias: 143, proteina: 12.6, carbo: 0.7, gordura: 9.5 },
-  "ovo frito": { calorias: 196, proteina: 13.6, carbo: 0.6, gordura: 15.3 },
-  "clara de ovo": { calorias: 48, proteina: 10.9, carbo: 0.4, gordura: 0.0 },
-  "gema de ovo": { calorias: 353, proteina: 16.1, carbo: 0.6, gordura: 31.1 },
-  "ovo pochê": { calorias: 143, proteina: 12.6, carbo: 0.7, gordura: 9.5 },
+  "ovo cozido": { 
+    calorias: 155, proteina: 13, carbo: 1.1, gordura: 11,
+    unidades: [
+      { tipo: "unidade", descricao: "Ovo médio", pesoPorUnidade: 50 },
+      { tipo: "unidade_grande", descricao: "Ovo grande", pesoPorUnidade: 60 }
+    ]
+  },
+  "ovo cru": { 
+    calorias: 143, proteina: 12.6, carbo: 0.7, gordura: 9.5,
+    unidades: [
+      { tipo: "unidade", descricao: "Ovo médio", pesoPorUnidade: 50 },
+      { tipo: "unidade_grande", descricao: "Ovo grande", pesoPorUnidade: 60 }
+    ]
+  },
+  "ovo frito": { 
+    calorias: 196, proteina: 13.6, carbo: 0.6, gordura: 15.3,
+    unidades: [
+      { tipo: "unidade", descricao: "Ovo médio", pesoPorUnidade: 50 },
+      { tipo: "unidade_grande", descricao: "Ovo grande", pesoPorUnidade: 60 }
+    ]
+  },
+  "clara de ovo": { 
+    calorias: 48, proteina: 10.9, carbo: 0.4, gordura: 0.0,
+    unidades: [
+      { tipo: "unidade", descricao: "Clara de 1 ovo", pesoPorUnidade: 35 }
+    ]
+  },
+  "gema de ovo": { 
+    calorias: 353, proteina: 16.1, carbo: 0.6, gordura: 31.1,
+    unidades: [
+      { tipo: "unidade", descricao: "Gema de 1 ovo", pesoPorUnidade: 15 }
+    ]
+  },
+  "ovo pochê": { 
+    calorias: 143, proteina: 12.6, carbo: 0.7, gordura: 9.5,
+    unidades: [
+      { tipo: "unidade", descricao: "Ovo médio", pesoPorUnidade: 50 }
+    ]
+  },
   "ovo mexido": { calorias: 154, proteina: 10.4, carbo: 1.6, gordura: 11.2 },
   "omelete": { calorias: 154, proteina: 10.8, carbo: 1.6, gordura: 11.2 },
 
@@ -127,27 +261,138 @@ export const alimentosDatabase = {
   "quiabo": { calorias: 33, proteina: 1.9, carbo: 7.5, gordura: 0.2 },
 
   // === FRUTAS ===
-  "banana": { calorias: 89, proteina: 1.1, carbo: 23, gordura: 0.3 },
-  "maçã": { calorias: 52, proteina: 0.3, carbo: 14, gordura: 0.2 },
-  "laranja": { calorias: 47, proteina: 0.9, carbo: 12, gordura: 0.1 },
-  "manga": { calorias: 60, proteina: 0.8, carbo: 15, gordura: 0.4 },
-  "morango": { calorias: 32, proteina: 0.7, carbo: 7.7, gordura: 0.3 },
-  "uva": { calorias: 69, proteina: 0.7, carbo: 18, gordura: 0.2 },
-  "melancia": { calorias: 30, proteina: 0.6, carbo: 8, gordura: 0.2 },
-  "abacaxi": { calorias: 50, proteina: 0.5, carbo: 13, gordura: 0.1 },
-  "mamão": { calorias: 40, proteina: 0.5, carbo: 10.4, gordura: 0.1 },
-  "pêra": { calorias: 57, proteina: 0.4, carbo: 15.2, gordura: 0.1 },
-  "kiwi": { calorias: 61, proteina: 1.1, carbo: 14.7, gordura: 0.5 },
-  "abacate": { calorias: 160, proteina: 2, carbo: 9, gordura: 15 },
+  "banana": { 
+    calorias: 89, proteina: 1.1, carbo: 23, gordura: 0.3,
+    unidades: [
+      { tipo: "unidade", descricao: "Banana média", pesoPorUnidade: 86 },
+      { tipo: "unidade_pequena", descricao: "Banana pequena", pesoPorUnidade: 65 },
+      { tipo: "unidade_grande", descricao: "Banana grande", pesoPorUnidade: 120 }
+    ]
+  },
+  "maçã": { 
+    calorias: 52, proteina: 0.3, carbo: 14, gordura: 0.2,
+    unidades: [
+      { tipo: "unidade", descricao: "Maçã média", pesoPorUnidade: 138 },
+      { tipo: "fatia", descricao: "Fatia média", pesoPorUnidade: 25 }
+    ]
+  },
+  "laranja": { 
+    calorias: 47, proteina: 0.9, carbo: 12, gordura: 0.1,
+    unidades: [
+      { tipo: "unidade", descricao: "Laranja média", pesoPorUnidade: 154 },
+      { tipo: "gomo", descricao: "Gomo grande", pesoPorUnidade: 15 }
+    ]
+  },
+  "manga": { 
+    calorias: 60, proteina: 0.8, carbo: 15, gordura: 0.4,
+    unidades: [
+      { tipo: "unidade", descricao: "Manga média", pesoPorUnidade: 200 },
+      { tipo: "fatia", descricao: "Fatia média", pesoPorUnidade: 40 }
+    ]
+  },
+  "morango": { 
+    calorias: 32, proteina: 0.7, carbo: 7.7, gordura: 0.3,
+    unidades: [
+      { tipo: "unidade", descricao: "Morango médio", pesoPorUnidade: 12 },
+      { tipo: "xicara", descricao: "Xícara", pesoPorUnidade: 150 }
+    ]
+  },
+  "uva": { 
+    calorias: 69, proteina: 0.7, carbo: 18, gordura: 0.2,
+    unidades: [
+      { tipo: "unidade", descricao: "Uva grande", pesoPorUnidade: 6 },
+      { tipo: "cacho", descricao: "Cacho pequeno", pesoPorUnidade: 80 }
+    ]
+  },
+  "melancia": { 
+    calorias: 30, proteina: 0.6, carbo: 8, gordura: 0.2,
+    unidades: [
+      { tipo: "fatia", descricao: "Fatia média", pesoPorUnidade: 280 },
+      { tipo: "xicara", descricao: "Xícara em cubos", pesoPorUnidade: 152 }
+    ]
+  },
+  "abacaxi": { 
+    calorias: 50, proteina: 0.5, carbo: 13, gordura: 0.1,
+    unidades: [
+      { tipo: "fatia", descricao: "Fatia média", pesoPorUnidade: 84 },
+      { tipo: "xicara", descricao: "Xícara em cubos", pesoPorUnidade: 165 }
+    ]
+  },
+  "mamão": { 
+    calorias: 40, proteina: 0.5, carbo: 10.4, gordura: 0.1,
+    unidades: [
+      { tipo: "fatia", descricao: "Fatia média", pesoPorUnidade: 140 },
+      { tipo: "xicara", descricao: "Xícara em cubos", pesoPorUnidade: 140 }
+    ]
+  },
+  "pêra": { 
+    calorias: 57, proteina: 0.4, carbo: 15.2, gordura: 0.1,
+    unidades: [
+      { tipo: "unidade", descricao: "Pêra média", pesoPorUnidade: 178 }
+    ]
+  },
+  "kiwi": { 
+    calorias: 61, proteina: 1.1, carbo: 14.7, gordura: 0.5,
+    unidades: [
+      { tipo: "unidade", descricao: "Kiwi médio", pesoPorUnidade: 69 }
+    ]
+  },
+  "abacate": { 
+    calorias: 160, proteina: 2, carbo: 9, gordura: 15,
+    unidades: [
+      { tipo: "unidade", descricao: "Abacate médio", pesoPorUnidade: 200 },
+      { tipo: "colher_sopa", descricao: "Colher de sopa", pesoPorUnidade: 20 }
+    ]
+  },
   "coco": { calorias: 354, proteina: 3.3, carbo: 15, gordura: 33 },
-  "açaí": { calorias: 58, proteina: 0.8, carbo: 6.2, gordura: 3.9 },
+  "açaí": { 
+    calorias: 58, proteina: 0.8, carbo: 6.2, gordura: 3.9,
+    unidades: [
+      { tipo: "tigela", descricao: "Tigela pequena", pesoPorUnidade: 200 },
+      { tipo: "colher_sopa", descricao: "Colher de sopa", pesoPorUnidade: 20 }
+    ]
+  },
 
   // === LATICÍNIOS ===
-  "leite desnatado": { calorias: 34, proteina: 3.4, carbo: 5, gordura: 0.1 },
-  "leite integral": { calorias: 61, proteina: 2.9, carbo: 4.3, gordura: 3.5 },
-  "iogurte grego": { calorias: 59, proteina: 10, carbo: 3.6, gordura: 0.4 },
-  "iogurte natural": { calorias: 51, proteina: 4.1, carbo: 4.7, gordura: 1.5 },
-  "queijo cottage": { calorias: 98, proteina: 11, carbo: 3.4, gordura: 4.3 },
+  "leite desnatado": { 
+    calorias: 34, proteina: 3.4, carbo: 5, gordura: 0.1,
+    unidades: [
+      { tipo: "copo", descricao: "Copo (200ml)", pesoPorUnidade: 200 },
+      { tipo: "xicara", descricao: "Xícara (240ml)", pesoPorUnidade: 240 },
+      { tipo: "colher_sopa", descricao: "Colher de sopa", pesoPorUnidade: 15 }
+    ]
+  },
+  "leite integral": { 
+    calorias: 61, proteina: 2.9, carbo: 4.3, gordura: 3.5,
+    unidades: [
+      { tipo: "copo", descricao: "Copo (200ml)", pesoPorUnidade: 200 },
+      { tipo: "xicara", descricao: "Xícara (240ml)", pesoPorUnidade: 240 },
+      { tipo: "colher_sopa", descricao: "Colher de sopa", pesoPorUnidade: 15 }
+    ]
+  },
+  "iogurte grego": { 
+    calorias: 59, proteina: 10, carbo: 3.6, gordura: 0.4,
+    unidades: [
+      { tipo: "pote", descricao: "Pote individual (170g)", pesoPorUnidade: 170 },
+      { tipo: "colher_sopa", descricao: "Colher de sopa", pesoPorUnidade: 25 },
+      { tipo: "xicara", descricao: "Xícara", pesoPorUnidade: 245 }
+    ]
+  },
+  "iogurte natural": { 
+    calorias: 51, proteina: 4.1, carbo: 4.7, gordura: 1.5,
+    unidades: [
+      { tipo: "pote", descricao: "Pote individual (170g)", pesoPorUnidade: 170 },
+      { tipo: "colher_sopa", descricao: "Colher de sopa", pesoPorUnidade: 25 },
+      { tipo: "xicara", descricao: "Xícara", pesoPorUnidade: 245 }
+    ]
+  },
+  "queijo cottage": { 
+    calorias: 98, proteina: 11, carbo: 3.4, gordura: 4.3,
+    unidades: [
+      { tipo: "colher_sopa", descricao: "Colher de sopa", pesoPorUnidade: 25 },
+      { tipo: "xicara", descricao: "Xícara", pesoPorUnidade: 225 }
+    ]
+  },
   "queijo minas": { calorias: 264, proteina: 17.4, carbo: 3.0, gordura: 20.6 },
   "queijo prato": { calorias: 360, proteina: 26.6, carbo: 0.0, gordura: 28.9 },
   "ricota": { calorias: 140, proteina: 8.1, carbo: 3.4, gordura: 10.9 },

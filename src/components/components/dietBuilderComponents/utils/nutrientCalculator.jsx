@@ -30,13 +30,15 @@ export const calcularNutrientes = (
 
   const fator = gramas / 100;
 
-  return {
+  const resultado = {
     calorias: Math.round(alimento.calorias * fator),
     proteina: Math.round(alimento.proteina * fator * 10) / 10,
     carbo: Math.round(alimento.carbo * fator * 10) / 10,
     gordura: Math.round(alimento.gordura * fator * 10) / 10,
     gramas: Math.round(gramas),
   };
+
+  return resultado;
 };
 
 /**
@@ -126,9 +128,11 @@ export const gerarUnidadesDisponiveis = (alimento) => {
 
   if (alimento.unidades && alimento.unidades.length > 0) {
     alimento.unidades.forEach((unidade, index) => {
+      // CORREÇÃO: Usar o tipo original da unidade ao invés de adicionar índice
+      // Isso garante que as unidades sejam consistentes mesmo quando recarregadas
       units.push({
-        tipo: `${unidade.tipo}_${index}`,
-        label: unidade.descricao || `${unidade.quantidade} ${unidade.tipo}(s)`,
+        tipo: unidade.tipo, // Usar tipo original sem índice
+        label: unidade.descricao || `${unidade.quantidade || 1} ${unidade.tipo}(s)`,
         descricao: `Cada ${unidade.descricao} tem aproximadamente ${unidade.pesoPorUnidade}g`,
         pesoPorUnidade: unidade.pesoPorUnidade,
         tipoOriginal: unidade.tipo,
@@ -160,7 +164,12 @@ export const converterParaGramas = (
     (u) => u.tipo === unidade
   );
 
-  return unidadeSelecionada
-    ? quantidade * (unidadeSelecionada.pesoPorUnidade || 1)
-    : quantidade;
+  if (unidadeSelecionada) {
+    const gramas = quantidade * unidadeSelecionada.pesoPorUnidade;
+    console.log(`✅ Conversão: ${quantidade} ${unidade} = ${gramas}g (peso por unidade: ${unidadeSelecionada.pesoPorUnidade}g)`);
+    return gramas;
+  } else {
+    console.warn(`⚠️ Unidade "${unidade}" não encontrada. Usando quantidade original: ${quantidade}`);
+    return quantidade;
+  }
 };

@@ -9,25 +9,37 @@ import {
   Chip,
 } from "@mui/material";
 import { FoodQuantitySelector } from "./FoodQuantitySelector";
+import { 
+  calcularNutrientes, 
+  gerarUnidadesDisponiveis 
+} from "./utils/nutrientCalculator";
 
 export const MultiSelectSummary = ({
   selectedFoods,
   quantities,
   onQuantityChange,
 }) => {
-  // Calcular totais
+  // Calcular totais usando as funções corretas
   const calculateTotals = () => {
     return selectedFoods.reduce(
       (acc, food) => {
         const foodKey = `${food.nome}_${food.calorias}`;
         const quantity = quantities[foodKey] || 100;
-        const factor = quantity / 100;
+        
+        // Usar a função correta de cálculo que considera as unidades
+        const unidadesDisponiveis = gerarUnidadesDisponiveis(food);
+        const nutrientes = calcularNutrientes(
+          food,
+          quantity,
+          food.unidade || "gramas",
+          unidadesDisponiveis
+        );
 
         return {
-          calorias: acc.calorias + food.calorias * factor,
-          proteina: acc.proteina + food.proteina * factor,
-          carbo: acc.carbo + food.carbo * factor,
-          gordura: acc.gordura + food.gordura * factor,
+          calorias: acc.calorias + nutrientes.calorias,
+          proteina: acc.proteina + nutrientes.proteina,
+          carbo: acc.carbo + nutrientes.carbo,
+          gordura: acc.gordura + nutrientes.gordura,
         };
       },
       { calorias: 0, proteina: 0, carbo: 0, gordura: 0 }
@@ -57,7 +69,15 @@ const handleQuantityChange = (foodKey, quantity) => {
         {selectedFoods.map((food) => {
           const foodKey = `${food.nome}_${food.calorias}`;
           const quantity = quantities[foodKey] || 100;
-          const factor = quantity / 100;
+          
+          // Usar a função correta de cálculo que considera as unidades
+          const unidadesDisponiveis = gerarUnidadesDisponiveis(food);
+          const nutrientes = calcularNutrientes(
+            food,
+            quantity,
+            food.unidade || "gramas",
+            unidadesDisponiveis
+          );
 
           return (
             <Grid item xs={12} key={foodKey}>
@@ -86,10 +106,10 @@ const handleQuantityChange = (foodKey, quantity) => {
                       {food.nome}
                     </Typography>
                     <Typography variant="body2" color="textSecondary">
-                      {Math.round(food.calorias * factor)} kcal | P:{" "}
-                      {Math.round(food.proteina * factor)}g | C:{" "}
-                      {Math.round(food.carbo * factor)}g | G:{" "}
-                      {Math.round(food.gordura * factor)}g
+                      {nutrientes.calorias} kcal | P:{" "}
+                      {nutrientes.proteina}g | C:{" "}
+                      {nutrientes.carbo}g | G:{" "}
+                      {nutrientes.gordura}g
                     </Typography>
                   </Box>
                   <FoodQuantitySelector
